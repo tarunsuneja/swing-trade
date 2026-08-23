@@ -859,3 +859,45 @@ the "/nan" target display bug (pandas NaN truthiness) while touching the
 renderer.
 
 *Source: `test_gap_policy.py`.*
+
+---
+
+## 23. H10 - Portfolio concentration controls (Aug 23) - corr<0.80 ADOPTED
+
+**Question (user Phase-1 item #2/#4/#5):** six independent slots can become one
+sector bet (HAL + BEL + POWERINDIA + ...). Do sector caps / correlation limits
+improve the book?
+
+Sector source upgraded FIRST: official NSE Industry column
+(ind_nifty500list.csv -> `_price_cache/sectors_nse.csv`, 500 symbols,
+TV-screener map as fallback). 139 tradable symbols map to 19 sectors, zero unknown.
+
+Constrained slot sim on the RS>=90 taken sequence (baseline reproduced:
+CAGR 27.6% / DD -34.8% / taken 1294):
+
+| Variant | CAGR | MaxDD | Taken | Notes |
+|---|---|---|---|---|
+| V0 none | 27.6% | -34.8% | 1294 | anchor |
+| V1 max 2/sector | 27.0% | -33.5% | 1217 | marginal |
+| V2 max 1/sector | 22.1% | -25.0% | 928 | too costly |
+| **V3 skip if corr(120d) >=0.80 vs any open** | **26.8%** | **-29.5%** | 1174 | best trade-off |
+| V4 corr >=0.70 | 26.6% | -29.5% | 1169 | no gain over V3 |
+| V5 sec2 + corr .70 | 23.7% | -30.9% | 1118 | over-constrained |
+
+Monte Carlo head-to-head (2,000 paths each, iid + block bootstrap):
+V3 tail DD consistently ~2-3pts better (block p5 -30% -> -27%; iid p5
+-27% -> -25%) for ~10% lower median terminal wealth (91x -> 81x).
+The improvement is systematic across resamples = real risk reshaping,
+not path noise.
+
+**ADOPTED:** before entering any position, compute trailing-120d return
+correlation vs each OPEN position; SKIP if max >= 0.80.
+NOT adopted: sector-count caps (no incremental benefit over corr filter;
+stacking them costs 3pts CAGR). Sector labels remain useful for display
+and future TIER2 work.
+
+Live helper: `corr_guard.py` (`max_corr_vs_open(candidate, open_list)`;
+CLI `py corr_guard.py BEL HAL`). Operational dependency: needs the open
+positions list -> lands fully in the scanner once the fills journal exists.
+
+*Source: `test_portfolio_constraints.py`; sector cache `sectors_nse.csv`.*
