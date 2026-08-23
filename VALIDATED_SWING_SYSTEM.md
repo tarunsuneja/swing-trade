@@ -901,3 +901,38 @@ CLI `py corr_guard.py BEL HAL`). Operational dependency: needs the open
 positions list -> lands fully in the scanner once the fills journal exists.
 
 *Source: `test_portfolio_constraints.py`; sector cache `sectors_nse.csv`.*
+
+---
+
+## 24. H11 - Composite setup-quality score (Aug 23) - REJECTED
+
+**Question (user Phase-1 item #3):** rank candidates 0-100 so the best
+get the 6 slots. Proposed weights (RS 30 / trend 20 / dist-SMA20 15 /
+ATR-quality 15 / volume 10 / R:R 10). R:R component dropped up front:
+under fixed-2R targets every candidate has IDENTICAL planned R:R -
+degenerate. Renormalised to RS 35 / trend 25 / dist 15 / volq 15 /
+volume 10. Formula in `test_score_ranking.py`.
+
+28,608 pullback trades scored (1975-2026). Pre-registered gate: score
+deciles must be monotone.
+
+| Segment | Result |
+|---|---|
+| Full book, 10 deciles | NON-monotone (PF 1.40/1.31/1.24/1.30/1.36/1.31/1.36/1.32/1.46/1.33) |
+| RS>=90 book, 4 quartiles | INVERTED at top: q1-q3 PF 1.55-1.59, **q4 PF 1.17, win 45%, avg +0.63%** |
+
+Diagnosis: inside an RS>=90 book the RS term saturates, so the highest
+scores are driven by the TREND term (price many ATRs above SMA200 =
+extended). The composite accidentally ranks chase-prone entries first.
+A score cutoff >=50 also showed a CAGR bump (25.9->31.9%) on 10 fewer
+trades - classic small-sample path noise (s18/s22 lesson); not chased.
+
+**VERDICT: REJECT the score as a ranking/gating tool.** Scanner output
+keeps raw RS (the only component with proven standalone edge).
+FUTURE RESEARCH ONLY (not adopted): the q4 inversion suggests an
+explicit EXTENSION cap (e.g., max ATRs above SMA200 at trigger) might
+remove genuinely bad entries - must be tested fresh with its own
+hypothesis BEFORE anyone trades on it. Flipping the score sign now
+would be curve-fitting.
+
+*Source: `test_score_ranking.py`, trades `_score_trades.csv`.*
