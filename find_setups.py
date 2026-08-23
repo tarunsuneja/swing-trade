@@ -29,7 +29,9 @@ Rs.1,50,000 per position, 6 slots total (open positions subtracted manually).
 
 Run:  py find_setups.py
 Out:  console table + setups_YYYY-MM-DD.csv + signal_log.csv (idempotent
-      audit trail: armed / RS-suppressed setups + daily gate state)
+      audit trail: armed / RS-suppressed setups + daily gate state).
+      Rows are RANKED most-recommended-first: class (PULLBACK core,
+      TIER2 satellite, BB_REV) then raw RS desc - presentation only.
 """
 
 import glob
@@ -315,7 +317,19 @@ def main() -> None:
     if not rows:
         print("\nNo qualifying setups today.")
         return
-    res = pd.DataFrame(rows).sort_values(["setup", "ticker"])
+    # Ranked display order (presentation ONLY - no trading logic):
+    # class by validated role (PULLBACK core s16, TIER2 satellite s13/s26,
+    # BB_REV mean-reversion), then raw RS desc (only validated ranker,
+    # s16/H11), then ticker.
+    CLASS_ORDER = {"PULLBACK": 0, "TIER2": 1, "BB_REV": 2}
+    res = pd.DataFrame(rows)
+    res["_cls"] = res["setup"].astype(str).str.split("(").str[0] \
+        .map(CLASS_ORDER).fillna(9)
+    res["_rs"] = pd.to_numeric(res["rs"], errors="coerce").fillna(-1)
+    res = res.sort_values(["_cls", "_rs", "ticker"],
+                          ascending=[True, False, True]).drop(
+        columns=["_cls", "_rs"])
+    res.insert(0, "rank", range(1, len(res) + 1))
     print(res.to_string(index=False))
     out = os.path.join(HERE, f"setups_{pd.Timestamp.now().date()}.csv")
     res.to_csv(out, index=False)

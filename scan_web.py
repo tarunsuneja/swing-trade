@@ -338,7 +338,7 @@ def render():
     gate_txt = ("REGIME GATE OPEN — longs allowed"
                 if s["ok"] else "REGIME GATE CLOSED — watchlist only")
     rows_a = ""
-    for r in s["armed"]:
+    for idx, r in enumerate(s["armed"], start=1):
         mc = r.get("max_chase", "")
         if mc != mc:  # NaN guard for old artifact files
             mc = ""
@@ -346,12 +346,17 @@ def render():
         if tm != tm:
             tm = ""
         try:
+            rank = int(r.get("rank", idx))
+        except (TypeError, ValueError):
+            rank = idx
+        try:
             age = int(float(r.get("age", 0)))
         except (TypeError, ValueError):
             age = 0
         a_txt, a_col = ((0, "#3fb950") if age == 0
                         else (1, "#d29922") if age == 1 else (age, "#f85149"))
-        rows_a += (f"<tr><td>{badge(r.get('setup',''))}</td>"
+        rows_a += (f"<tr><td><b>{rank}</b></td>"
+                   f"<td>{badge(r.get('setup',''))}</td>"
                    f"<td><b>{html.escape(str(r.get('ticker','')))}</b></td>"
                    f"<td>{r.get('signal_date','')}</td>"
                    f"<td><span class='badge' style='background:{a_col}22;color:{a_col};border:1px solid {a_col}55'>age {a_txt}</span></td>"
@@ -412,7 +417,7 @@ h2{{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:#8b949e;mar
 <div class="banner {gate_cls}">{gate_txt}
 <span class="dist">Nifty {s['nifty']:,} vs 200-DMA {s['sma200']:,.0f} ({s['dist']:+.2f}%) · vol pctl {s['vpctl']}/100{' — <b>[VOL HOLD: no new entries, H14]</b>' if s['vpctl'] >= 90 else ''}</span></div>
 <h2>Armed setups ({len(s['armed'])})</h2>
-{'<table><tr><th>Setup</th><th>Ticker</th><th>Signal date</th><th>Age</th><th>Entry zone</th><th>Stop</th><th>Target</th><th>Max chase</th><th>Qty</th><th>Notional ₹</th><th>RS</th><th>RSI</th></tr>' + rows_a + '</table>' if rows_a else '<div class="none">No qualifying setups.</div>'}
+{'<table><tr><th>#</th><th>Setup</th><th>Ticker</th><th>Signal date</th><th>Age</th><th>Entry zone</th><th>Stop</th><th>Target</th><th>Max chase</th><th>Qty</th><th>Notional ₹</th><th>RS</th><th>RSI</th></tr>' + rows_a + '</table>' if rows_a else '<div class="none">No qualifying setups.</div>'}
 {('<h2>Suppressed / watch (' + str(len(s['supp'])) + ')</h2><table><tr><th>Setup</th><th>Ticker</th><th>Signal date</th><th>Age</th><th>Entry zone</th><th>RS</th><th>Reason</th></tr>' + rows_s + '</table>') if rows_s else ''}
 <h2>Signal log (latest 25)</h2>
 <table><tr><th>Date</th><th>Ticker</th><th>Setup</th><th>Action</th><th>Entry zone</th><th>Gate</th></tr>{rows_l}</table>
@@ -420,6 +425,7 @@ h2{{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:#8b949e;mar
 Execution: enter NEXT session near signal close (limit orders) · SKIP if next open &lt; stop or &gt; max chase (H9 gap policy) · resting SL at broker on fill · exits per validated rules (pullback/tier2 2R + 20d/10d time stop · bb_rev SMA20 or 8d).<br>
 Freshness (H12): signals expire after ONE session — age 0 keeps full edge, age 1 retains 81%; target-filled or stop-broken setups are dropped by the scanner.<br>
 Vol hold (H14): when Nifty's own ATR% is in the top decile of its trailing year (pctl ≥90) NO new entries are taken — validated DD −34.8%→−27.1% at 0.2pt CAGR cost.<br>
+Ranking (# column, presentation only): class by validated role (PULLBACK core → TIER2 satellite → BB_REV), then raw RS descending — the only ranking metric with proven standalone edge (s16/H11).
 Entries allowed ONLY while gate OPEN. Display mirrors CLI output — no trading logic here.</div>
 </div>
 <div id="tab-logic" class="hidden">{LOGIC}</div>
