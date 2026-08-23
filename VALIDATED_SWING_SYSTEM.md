@@ -817,3 +817,45 @@ genuinely need breadth (e.g., TIER-II sector maps across more sectors).
 
 *Sources: `_fetch_n500.py`, `_n500_validate.py`, trades `_n500_pullback_trades.csv`,
 fails list `_n500_fetch_fails.txt`.*
+
+---
+
+## 22. H9 - Entry gap/chase policy (Aug 23) - ADOPTED as execution safeguard
+
+**Question (user Phase-1 item #1/#9):** engine enters unconditionally at next
+open. Should we skip bad opens?
+
+Variants tested on the anchor engine (baseline reproduced n=28630 PF=1.34
+avg=+1.02 OK), RS>=90 book shown:
+
+| Policy | n | PF | Avg | CAGR | DD |
+|---|---|---|---|---|---|
+| Baseline | 4,936 | 1.55 | +1.87% | 27.6% | -34.8% |
+| chase <=0.25 ATR | 3,934 | 1.48 | +1.64% | 25.4% | -34.5% |
+| **chase <=0.50 ATR** | 4,674 | **1.56** | **+1.89%** | **33.8%** | **-31.2%** |
+| chase <=1.00 ATR | 4,886 | 1.57 | +1.92% | 31.0% | -32.1% |
+| gap-through-stop skip | 4,933 | 1.55 | +1.87% | 27.8% | -34.8% |
+| gap-dn + chase 0.5 | 4,671 | 1.56 | +1.89% | 30.6% | -32.5% |
+
+Realism check (stop anchored to PLAN level = resting-SL behaviour):
+baseline 28.9%/-35.3% vs combined 30.9%/-29.6%.
+
+**HONEST READING:** per-trade edge is UNCHANGED by every filter (PF band
+1.48-1.57 = noise; gap-skip fires 3x in 20y). The chase-0.5 CAGR jump is
+compounding path noise, NOT alpha (same lesson as s18 fragility sweep).
+
+**ADOPTED ANYWAY, framed correctly:**
+- chase cap 0.5 ATR: costs nothing (PF identical), bounds real-world
+  slippage beyond modelled 0.30% costs.
+- gap-through-plan-stop skip: near-zero statistical footprint but removes
+  the instant-stop-out fill scenario entirely.
+- 0.25 cap REJECTED: too strict, measurably hurts (PF 1.48).
+
+**Implemented in production:** `find_setups.chase_cap()` emits a
+`max_chase` column on every row (PULLBACK/BB_REV/TIER2); execution footer
+now reads "SKIP if next open < stop or > max_chase". Web page shows the
+Max chase column; signal_log schema extended (`max_chase`). Also fixed
+the "/nan" target display bug (pandas NaN truthiness) while touching the
+renderer.
+
+*Source: `test_gap_policy.py`.*

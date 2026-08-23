@@ -331,10 +331,17 @@ def render():
                 if s["ok"] else "REGIME GATE CLOSED — watchlist only")
     rows_a = ""
     for r in s["armed"]:
+        mc = r.get("max_chase", "")
+        if mc != mc:  # NaN guard for old artifact files
+            mc = ""
+        tm = r.get("target_mid", "")
+        if tm != tm:
+            tm = ""
         rows_a += (f"<tr><td>{badge(r.get('setup',''))}</td>"
                    f"<td><b>{html.escape(str(r.get('ticker','')))}</b></td>"
                    f"<td>{r.get('entry_zone','')}</td><td>{r.get('stop','')}</td>"
-                   f"<td>{r.get('target_2R','')}{(' / ' + str(r['target_mid'])) if r.get('target_mid') else ''}</td>"
+                   f"<td>{r.get('target_2R','')}{f' / {tm} (SMA20)' if str(tm) != '' else ''}</td>"
+                   f"<td>{mc}</td>"
                    f"<td>{r.get('qty','')}</td><td>{r.get('notional','')}</td>"
                    f"<td>{r.get('rs','')}</td><td>{r.get('rsi','')}</td></tr>")
     rows_s = "".join(
@@ -386,12 +393,12 @@ h2{{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:#8b949e;mar
 <div class="banner {gate_cls}">{gate_txt}
 <span class="dist">Nifty {s['nifty']:,} vs 200-DMA {s['sma200']:,.0f} ({s['dist']:+.2f}%)</span></div>
 <h2>Armed setups ({len(s['armed'])})</h2>
-{'<table><tr><th>Setup</th><th>Ticker</th><th>Entry zone</th><th>Stop</th><th>Target</th><th>Qty</th><th>Notional ₹</th><th>RS</th><th>RSI</th></tr>' + rows_a + '</table>' if rows_a else '<div class="none">No qualifying setups.</div>'}
+{'<table><tr><th>Setup</th><th>Ticker</th><th>Entry zone</th><th>Stop</th><th>Target</th><th>Max chase</th><th>Qty</th><th>Notional ₹</th><th>RS</th><th>RSI</th></tr>' + rows_a + '</table>' if rows_a else '<div class="none">No qualifying setups.</div>'}
 {('<h2>RS-suppressed (' + str(len(s['supp'])) + ')</h2><table><tr><th>Setup</th><th>Ticker</th><th>Entry zone</th><th>RS</th><th>Reason</th></tr>' + rows_s + '</table>') if rows_s else ''}
 <h2>Signal log (latest 25)</h2>
 <table><tr><th>Date</th><th>Ticker</th><th>Setup</th><th>Action</th><th>Entry zone</th><th>Gate</th></tr>{rows_l}</table>
 <div class="footer">Sizing: ₹6,00,000 satellite · risk 1.5%/trade (₹9,000) · max notional ₹1,50,000 · 6 slots.<br>
-Execution: enter NEXT session near signal close (limit orders) · resting SL at broker on fill · exits per validated rules (pullback/tier2 2R + 20d/10d time stop · bb_rev SMA20 or 8d).<br>
+Execution: enter NEXT session near signal close (limit orders) · SKIP if next open &lt; stop or &gt; max chase (H9 gap policy) · resting SL at broker on fill · exits per validated rules (pullback/tier2 2R + 20d/10d time stop · bb_rev SMA20 or 8d).<br>
 Entries allowed ONLY while gate OPEN. Display mirrors CLI output — no trading logic here.</div>
 </div>
 <div id="tab-logic" class="hidden">{LOGIC}</div>

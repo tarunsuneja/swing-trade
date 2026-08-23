@@ -42,7 +42,7 @@ MAX_NOTIONAL = 150_000
 LOG_FP = os.path.join(HERE, "signal_log.csv")
 LOG_COLS = ["logged_at", "signal_date", "ticker", "setup", "action",
             "entry_zone", "stop", "target_2R", "qty", "notional", "rs",
-            "gate"]
+            "max_chase", "gate"]
 
 
 def wilder(s: pd.Series, n: int) -> pd.Series:
@@ -77,7 +77,7 @@ def regime_ok() -> tuple[bool, float]:
 
 
 def mk_row(kind, sym, sig_date, entry, stop, qty, rs_now, rsi_now,
-           tgt_mid="", gate="", action=""):
+           tgt_mid="", gate="", action="", max_chase=""):
     risk_ps = entry - stop
     return {
         "setup": kind, "ticker": sym, "signal_date": sig_date,
@@ -87,9 +87,15 @@ def mk_row(kind, sym, sig_date, entry, stop, qty, rs_now, rsi_now,
         "notional": int(qty * entry),
         "rs": int(rs_now) if np.isfinite(rs_now) else "",
         "rsi": round(float(rsi_now), 1),
+        "max_chase": max_chase,
         "gate": gate, "action": action,
         "logged_at": pd.Timestamp.now().isoformat(timespec="seconds"),
     }
+
+
+def chase_cap(entry: float, atr: float) -> float:
+    """H9: highest price payable next session - skip fills above this."""
+    return round(entry * (1 + 0.5 * atr / entry), 1)
 
 
 def log_signals(entries: list[dict], ok: bool) -> None:
@@ -100,7 +106,9 @@ def log_signals(entries: list[dict], ok: bool) -> None:
              "ticker": e["ticker"], "setup": e["setup"].split("(")[0],
              "action": e["action"], "entry_zone": e["entry_zone"],
              "stop": e["stop"], "target_2R": e["target_2R"], "qty": e["qty"],
-             "notional": e["notional"], "rs": e["rs"], "gate": e["gate"]}
+             "notional": e["notional"], "rs": e["rs"],
+             "max_chase": e.get("max_chase", ""),
+             "gate": e["gate"]}
             for e in entries]
     have = set()
     if os.path.exists(LOG_FP):
@@ -187,13 +195,15 @@ def main() -> None:
             rs_suppressed += 1
             suppressed.append(mk_row(kind, sym, df.index[i].date(), entry_ref,
                                      stop, qty, rs_now, r["RSI"],
-                                     gate=gate_txt, action="SUPPRESSED_RS"))
+                                     gate=gate_txt, action="SUPPRESSED_RS",
+                                     max_chase=chase_cap(entry_ref, r["ATR"])))
             continue
         rows.append(mk_row(kind, sym, df.index[i].date(), entry_ref, stop,
                            qty, rs_now, r["RSI"],
                            tgt_mid=round(float(r["SMA20"]), 1)
                            if kind == "BB_REV" else "",
-                           gate=gate_txt, action="ARMED" if ok else "WATCH"))
+                           gate=gate_txt, action="ARMED" if ok else "WATCH",
+                           max_chase=chase_cap(entry_ref, r["ATR"])))
 
     # ---- Scan E: Tier-II sympathy (validated separately, see
     # test_tier2_sympathy.py / doc section 13) ----
@@ -228,7 +238,8 @@ def main() -> None:
                                if sym in rs_panel.index
                                and np.isfinite(rs_panel[sym]) else np.nan,
                                r["RSI"], gate=gate_txt,
-                               action="ARMED" if ok else "WATCH"))
+                               action="ARMED" if ok else "WATCH",
+                               max_chase=chase_cap(entry_ref, r["ATR"])))
     except Exception as e:  # sympathy scan must never kill the main scan
         print(f"(tier2 scan skipped: {e})")
 
@@ -247,6 +258,7 @@ def main() -> None:
     res.to_csv(out, index=False)
     print(f"\nSaved: {out}")
     print("Execution: enter NEXT session near signal close (limit orders); "
+          "SKIP the trade if next open < stop or > max_chase (H9 gap policy); "
           "stop-loss mandatory at fill; exits per validated rules "
           "(pullback/tier2: 2R, time stop 20d/10d; bb_rev: SMA20 or 8d).")
 
