@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 r"""Find live setups using ONLY the validated rules (strategy_validation.py).
 
 Signals detected on cached daily data (top-150 universe, refreshed via
@@ -12,6 +12,10 @@ tv_history when stale):
                uptrend, 0.66 in downtrend -> gate applies. Exits: 2R/10d.
 
 Regime gate: no new longs unless Nifty > its 200-day SMA.
+Vol hold (H14, doc s27): additionally no NEW entries when Nifty's own
+ATR% is in the top decile of its trailing 252 sessions (pctl>=90).
+Validated: portfolio DD -34.8% -> -27.1% at 0.2pt CAGR cost; MC shows
+shallower drawdown tails with no compounding loss.
 
 RS quality gate (adopted Aug 21 2026, see doc section 16 /
 test_momentum_filters.py): PULLBACK entries additionally require an
@@ -76,6 +80,20 @@ def regime_ok() -> tuple[bool, float]:
     return last > sma200, round(last, 1)
 
 
+def nifty_vol_pctl() -> float:
+    """H14 (doc s27): Nifty ATR14/Close percentile vs its own trailing
+    252 sessions, read at the latest completed close. >=90 => no NEW
+    entries (validated: DD -34.8%->-27.1%, CAGR cost 0.2pt)."""
+    fp = os.path.join(CACHE, "NIFTY.csv")
+    df = pd.read_csv(fp, parse_dates=["date"], index_col="date").sort_index()
+    h, l, c = df["High"], df["Low"], df["Close"]
+    tr = pd.concat([h - l, (h - c.shift()).abs(),
+                    (l - c.shift()).abs()], axis=1).max(axis=1)
+    atrp = tr.ewm(alpha=1 / 14, adjust=False, min_periods=14).mean() / c
+    v = atrp.rolling(252).rank(pct=True).iloc[-1] * 100
+    return float(v) if np.isfinite(v) else 50.0
+
+
 def mk_row(kind, sym, sig_date, entry, stop, qty, rs_now, rsi_now,
            tgt_mid="", gate="", action="", max_chase="", age=0):
     risk_ps = entry - stop
@@ -99,7 +117,7 @@ def chase_cap(entry: float, atr: float) -> float:
     return round(entry * (1 + 0.5 * atr / entry), 1)
 
 
-def log_signals(entries: list[dict], ok: bool) -> None:
+def log_signals(entries: list[dict], ok: bool, vol_hold: bool = False) -> None:
     """Idempotent append of every armed/suppressed setup + gate state."""
     migrate_log()
     today = str(pd.Timestamp.now().date())
@@ -124,12 +142,14 @@ def log_signals(entries: list[dict], ok: bool) -> None:
              if (str(r["signal_date"]), str(r["ticker"]), str(r["setup"]))
              not in have]
     if (today, "-", "GATE") not in have:
+        gate_state = ("OPEN_VOLHOLD" if vol_hold
+                      else "OPEN" if ok else "CLOSED")
         fresh.append({"logged_at": now, "signal_date": today, "ticker": "-",
                       "setup": "GATE", "age": "",
-                      "action": "OPEN" if ok else "CLOSED",
+                      "action": gate_state,
                       "entry_zone": "", "stop": "", "target_2R": "",
                       "qty": "", "notional": "", "rs": "",
-                      "gate": "OPEN" if ok else "CLOSED"})
+                      "gate": gate_state})
     if not fresh:
         print("(signal_log.csv: up to date)")
         return
@@ -153,8 +173,12 @@ def migrate_log() -> None:
 
 def main() -> None:
     ok, nifty = regime_ok()
+    vp_now = nifty_vol_pctl()
+    vol_hold = ok and vp_now >= 90
     print(f"Nifty {nifty:,} | regime gate: "
-          f"{'OPEN - longs allowed' if ok else 'CLOSED - no new longs'}")
+          f"{'OPEN - longs allowed' if ok else 'CLOSED - no new longs'} | "
+          f"vol pctl {vp_now:.0f}/100"
+          + ("  [VOL HOLD - H14: no NEW entries]" if vol_hold else ""))
 
     rows = []
     raw = {}
@@ -240,7 +264,7 @@ def main() -> None:
                            qty, rs_now, r["RSI"],
                            tgt_mid=round(float(r["SMA20"]), 1)
                            if kind == "BB_REV" else "",
-                           gate=gate_txt, action="ARMED" if ok else "WATCH",
+                           gate=gate_txt, action=("WATCH_VOL" if vol_hold else ("ARMED" if ok else "WATCH")),
                            max_chase=chase_cap(entry_ref, r["ATR"]), age=age))
 
     # ---- Scan E: Tier-II sympathy (validated separately, see
@@ -276,7 +300,7 @@ def main() -> None:
                                if sym in rs_panel.index
                                and np.isfinite(rs_panel[sym]) else np.nan,
                                r["RSI"], gate=gate_txt,
-                               action="ARMED" if ok else "WATCH",
+                               action=("WATCH_VOL" if vol_hold else ("ARMED" if ok else "WATCH")),
                                max_chase=chase_cap(entry_ref, r["ATR"]),
                                age=0))
     except Exception as e:  # sympathy scan must never kill the main scan
@@ -286,7 +310,7 @@ def main() -> None:
         print(f"(RS gate suppressed {rs_suppressed} PULLBACK setup(s) "
               f"below RS 90 - doc section 16)")
 
-    log_signals(suppressed + rows, ok)
+    log_signals(suppressed + rows, ok, vol_hold)
 
     if not rows:
         print("\nNo qualifying setups today.")

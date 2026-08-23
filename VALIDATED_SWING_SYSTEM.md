@@ -1010,3 +1010,51 @@ HDFCBANK->ICICIBANK, MARUTI->MOTHERSON.
 Caveat: n stays modest (56 uptrend trades) and the downtrend segment
 (0.31) reinforces that TIER2 rows are ONLY actionable with the gate
 open - already enforced everywhere.
+
+---
+
+## 27. H14 - Volatility-regime overlay (Aug 23) - ADOPTED (V1 only)
+
+**Question (user Phase-1 item #7):** does Nifty's own volatility state
+add portfolio value beyond the trend gate?
+
+Metric: Nifty ATR14/Close percentile vs its own trailing 252 sessions
+(rolling rank 0-100), read at the last completed session BEFORE the
+decision (no look-ahead). Variants pre-registered before any
+conditional stats were computed: V1 block new entries >=90 pctl,
+V2 block >=80 pctl, V3 halve slots when >=80 pctl.
+
+Descriptive (RS>=90 trades x regime gate):
+
+| Segment | v<50 | v 50-79 | v>=80 |
+|---|---|---|---|
+| GATE OPEN | n=2160 PF 1.69 | n=1007 PF 1.49 | **n=634 PF 2.15** |
+| gate shut | n=293 PF 0.97 | n=349 PF 0.75 | n=483 PF 1.39 |
+
+High vol is GOOD for per-trade quality once the trend gate is open
+(post-correction rebounds; ATR-scaled stops survive the noise) - which
+is why V2 fails spectacularly: blocking ALL high-vol entries costs
+3.7pts CAGR AND worsens path DD to -42%.
+
+Portfolio overlays:
+
+| Variant | CAGR | MaxDD | verdict |
+|---|---|---|---|
+| V0 baseline | 27.6% | -34.8% | anchor |
+| **V1 skip entries v>=90** | **27.4%** | **-27.1%** | **ADOPTED** |
+| V2 skip entries v>=80 | 23.9% | -42.0% | rejected |
+| V3 slots->3 when v>=80 | 25.8% | -30.7% | rejected |
+
+V1 passes the pre-registered gate (+7.7pts DD, -0.2pt CAGR). MC
+head-to-head (2k paths): terminal-equity bands identical (iid p5 32x vs
+31x), drawdown tails shallower (block p5 -26% vs -30%, medians -17% vs
+-19%). No compounding destruction.
+
+**ADOPTED RULE: no NEW entries while Nifty ATR% is in its trailing-year
+top decile (pctl>=90, ~12% of days). Existing positions keep normal
+exit management.**
+
+Integration: `find_setups.nifty_vol_pctl()`; header prints the reading;
+rows become WATCH_VOL instead of ARMED during a hold (signal_log GATE
+row records OPEN_VOLHOLD); web banner shows vol pctl + explicit hold
+warning; suppressed table now carries per-row reasons.

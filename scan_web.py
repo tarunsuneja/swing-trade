@@ -102,6 +102,7 @@ def data_is_stale():
 
 def collect():
     ok, nifty_last = find_setups.regime_ok()
+    vp = round(find_setups.nifty_vol_pctl())
     ndf = pd.read_csv(os.path.join(CACHE, "NIFTY.csv"),
                       parse_dates=["date"], index_col="date")
     sma200 = float(ndf["Close"].rolling(200).mean().iloc[-1])
@@ -120,8 +121,14 @@ def collect():
                 time.sleep(0.5)
                 df = pd.DataFrame()
         if not df.empty and "action" in df.columns:
-            armed = df[df["action"] != "SUPPRESSED_RS"].to_dict("records")
-            supp = df[df["action"] == "SUPPRESSED_RS"].to_dict("records")
+            act = df["action"].astype(str)
+            armed = df[act == "ARMED"].to_dict("records")
+            rest = df[act != "ARMED"].copy()
+            rmap = {"SUPPRESSED_RS": "RS<90",
+                    "WATCH_VOL": "Nifty vol >=90 pctl (H14)",
+                    "WATCH": "regime gate shut"}
+            rest["reason"] = [rmap.get(a, a) for a in act[act != "ARMED"]]
+            supp = rest.to_dict("records")
         elif not df.empty:
             armed = df.to_dict("records")
 
@@ -136,6 +143,7 @@ def collect():
 
     return {
         "ok": ok, "nifty": nifty_last, "sma200": sma200, "dist": dist,
+        "vpctl": vp,
         "armed": armed, "supp": supp, "log": log_rows,
         "source": os.path.basename(fp) if fp else "-",
         "generated": pd.Timestamp.now().strftime("%d-%b-%Y %H:%M:%S"),
@@ -355,8 +363,11 @@ def render():
     rows_s = "".join(
         f"<tr><td>{badge(r.get('setup',''))}</td>"
         f"<td><b>{html.escape(str(r.get('ticker','')))}</b></td>"
+        f"<td>{r.get('signal_date','')}</td>"
+        f"<td>{r.get('age','')}</td>"
         f"<td>{r.get('entry_zone','')}</td><td>{r.get('rs','')}</td>"
-        f"<td>RS&lt;90</td></tr>" for r in s["supp"])
+        f"<td>{html.escape(str(r.get('reason', 'RS&lt;90')))}</td></tr>"
+        for r in s["supp"])
     rows_l = "".join(
         f"<tr><td>{r.get('signal_date','')}</td>"
         f"<td>{html.escape(str(r.get('ticker','')))}</td>"
@@ -399,15 +410,16 @@ h2{{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:#8b949e;mar
 </div>
 <div id="tab-live">
 <div class="banner {gate_cls}">{gate_txt}
-<span class="dist">Nifty {s['nifty']:,} vs 200-DMA {s['sma200']:,.0f} ({s['dist']:+.2f}%)</span></div>
+<span class="dist">Nifty {s['nifty']:,} vs 200-DMA {s['sma200']:,.0f} ({s['dist']:+.2f}%) · vol pctl {s['vpctl']}/100{' — <b>[VOL HOLD: no new entries, H14]</b>' if s['vpctl'] >= 90 else ''}</span></div>
 <h2>Armed setups ({len(s['armed'])})</h2>
 {'<table><tr><th>Setup</th><th>Ticker</th><th>Signal date</th><th>Age</th><th>Entry zone</th><th>Stop</th><th>Target</th><th>Max chase</th><th>Qty</th><th>Notional ₹</th><th>RS</th><th>RSI</th></tr>' + rows_a + '</table>' if rows_a else '<div class="none">No qualifying setups.</div>'}
-{('<h2>RS-suppressed (' + str(len(s['supp'])) + ')</h2><table><tr><th>Setup</th><th>Ticker</th><th>Entry zone</th><th>RS</th><th>Reason</th></tr>' + rows_s + '</table>') if rows_s else ''}
+{('<h2>Suppressed / watch (' + str(len(s['supp'])) + ')</h2><table><tr><th>Setup</th><th>Ticker</th><th>Signal date</th><th>Age</th><th>Entry zone</th><th>RS</th><th>Reason</th></tr>' + rows_s + '</table>') if rows_s else ''}
 <h2>Signal log (latest 25)</h2>
 <table><tr><th>Date</th><th>Ticker</th><th>Setup</th><th>Action</th><th>Entry zone</th><th>Gate</th></tr>{rows_l}</table>
 <div class="footer">Sizing: ₹6,00,000 satellite · risk 1.5%/trade (₹9,000) · max notional ₹1,50,000 · 6 slots.<br>
 Execution: enter NEXT session near signal close (limit orders) · SKIP if next open &lt; stop or &gt; max chase (H9 gap policy) · resting SL at broker on fill · exits per validated rules (pullback/tier2 2R + 20d/10d time stop · bb_rev SMA20 or 8d).<br>
 Freshness (H12): signals expire after ONE session — age 0 keeps full edge, age 1 retains 81%; target-filled or stop-broken setups are dropped by the scanner.<br>
+Vol hold (H14): when Nifty's own ATR% is in the top decile of its trailing year (pctl ≥90) NO new entries are taken — validated DD −34.8%→−27.1% at 0.2pt CAGR cost.<br>
 Entries allowed ONLY while gate OPEN. Display mirrors CLI output — no trading logic here.</div>
 </div>
 <div id="tab-logic" class="hidden">{LOGIC}</div>
