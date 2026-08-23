@@ -1,0 +1,29 @@
+//@version=5
+// BB REVERSION — mirrors E:\PortfolioTracker\SwingTrading\find_setups.py exactly.
+// Validated: PF 1.28 overall / PF 1.49 in Nifty uptrend; filler only, max 1-2
+// concurrent. Apply to DAILY chart of each watchlist symbol.
+// Alert: "Once Per Bar Close".
+// MANUAL CONFIRMATION REQUIRED before entry (per STRATEGY_1 doc checklist):
+// reversal candle + no earnings within 3 days + Nifty > 200-DMA.
+
+len  = input.int(20, "BB length")
+mult = input.float(2.0, "BB stddev", step=0.1)
+
+basis = ta.sma(close, len)
+dev   = mult * ta.stdev(close, len)   // population stdev = pandas ddof=0
+lower = basis - dev
+sma200 = ta.sma(close, 200)
+rsi    = ta.rsi(close, 14)            // Wilder smoothing by default
+
+bbrevSignal = rsi < 35 and close > sma200 and close <= lower * 1.02 and not na(lower)
+
+plot(basis, "BB Mid", color.gray)
+plot(lower, "BB Lower", color.blue)
+plot(sma200, "SMA200", color.red)
+
+plotshape(bbrevSignal, title="BB Reversion Signal", style=shape.triangledown,
+          location=location.belowbar, color=color.aqua, size=size.small,
+          text="BB")
+
+alertcondition(bbrevSignal, title="BB Reversion LONG",
+               message='{{ticker}} BB_REV setup @ {{close}} - needs manual reversal-candle check first; stop = close-1.5xATR, target SMA20')

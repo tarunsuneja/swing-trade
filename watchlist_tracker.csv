@@ -1,0 +1,12 @@
+Stock,CMP,Entry Zone Low,Entry Zone High,Stop Loss,Target 1,Target 2,Risk:Reward,Setup Type,Sector,Watchlist Date,Status,Alert Triggered,Notes
+Ajanta Pharma,3782,3750,3800,3650,3950,4150,1:2.8,Breakout,Pharma,2026-08-18,EXECUTED,YES,New 52-week high; 4-day streak; sector leading
+Marksans Pharma,309,305,312,295,335,360,1:4,Breakout,Pharma,2026-08-18,EXECUTED,YES,Near 52-week high; pharma tailwind
+Supreme Industries,3590,3500,3550,3425,3685,3750,1:1.5,Inverse H&S,Industrials,2026-08-18,Watchlist,NO,Wait for pullback to ₹3,500-3,550
+Shriram Finance,1117,1100,1130,1075,1195,1262,1:2.5,Breakout,Financials,2026-08-18,Watchlist,NO,Consolidation breakout; wait for entry zone
+M&M,3395,3300,3400,3200,3710,3840,1:2.5,W-Pattern,Auto,2026-08-18,Watchlist,NO,W-pattern breakout; wait for entry zone
+Godrej Agrovet,580,570,585,568,605,620,1:2,Breakout,FMCG,2026-08-18,Watchlist,NO,Clean breakout; wait for entry zone
+Asahi India Glass,930,910,940,885,1020,1050,1:2,Triple-Top,Auto Ancillary,2026-08-18,Watchlist,NO,Triple-top breakout; wait for entry zone
+PTC Industries,20585,19400,20600,18800,22500,24000,1:2,Ascending Triangle,Defence,2026-08-18,Watchlist,NO,High price; need ₹2L+ capital per lot
+Vardhman Special,353,344,355,330,385,410,1:2,Weekly Breakout, Metals,2026-08-18,Watchlist,NO,Weekly breakout; wait for entry zone
+Manorama Industries,1737,1720,1750,1680,1850,1950,1:2,Near Breakout,Chemicals,2026-08-18,Watchlist,NO,Near weekly breakout; wait for confirmation
+

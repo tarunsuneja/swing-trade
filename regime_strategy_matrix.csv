@@ -1,0 +1,8 @@
+Market Regime,Detection Method,Primary Strategy,Secondary Strategy,Position Size,Risk %,Stop Distance,Expected Win Rate,Notes
+Trending Up,ADX > 25 + Price above 200 SMA + VIX < 18,Momentum Breakout + 52-Week High,Sector Rotation + Covered Call,Full,2-3%,3-5%,55-60%,
+Trending Down,ADX > 25 + Price below 200 SMA + VIX > 20,Cash-Secured Puts (accumulate),Pair Trading (market-neutral),Half,1-1.5%,5-7%,50-55%,
+Range-Bound,ADX < 20 + VIX < 18 + Price in S/R zone,Mean Reversion + Options Selling,Pair Trading,Full,1.5-2%,2-4%,58-65%,
+High Volatility,VIX > 20 + Large daily swings,Reduce Size + Wider Stops,Event-Driven (block deals),Quarter,0.5-1%,5-8%,50-55%,
+Compression,ADX < 20 + BB Width narrowing + ATR falling,Prepare for Breakout,Cash-Secured Puts (high premium),Wait,0%,—,—,Wait for breakout confirmation
+Earnings Season,Results calendar + Pre-earnings drift,Pre-Earnings Momentum,Post-Earnings Drift,Half,1-1.5%,4%,55-60%,Exit before binary event
+

@@ -1,0 +1,23 @@
+Date,Time,Checklist Item,Status,Notes
+2026-08-18,06:00,Check global markets (US, Asia),DONE,Dow -0.51%; Nikkei -1.8%; mixed Asia
+2026-08-18,07:00,Technical scan (Chartink),DONE,Ajanta Pharma new 52W high; Marksans near 52W high
+2026-08-18,08:00,Plan trades and set alerts,DONE,Ajanta ₹3,750/₹3,800; Marksans ₹305
+2026-08-18,08:30,Check India VIX,DONE,VIX 11.29 (low — sellers paradise)
+2026-08-18,09:15,Market opens — DO NOT enter first 15 min,PENDING,Wait for volatility to settle
+2026-08-18,09:30,Check Ajanta Pharma above ₹3,750,PENDING,If yes → place BUY limit ₹3,780
+2026-08-18,09:35,Place Ajanta Pharma BUY order,PENDING,60 shares @ ₹3,780 limit
+2026-08-18,09:40,Check Marksans Pharma above ₹305,PENDING,If yes → place BUY limit ₹308
+2026-08-18,09:45,Place Marksans Pharma BUY order,PENDING,600 shares @ ₹308 limit
+2026-08-18,10:00,Set stop loss GTT orders,PENDING,Ajanta ₹3,650; Marksans ₹295
+2026-08-18,10:05,Set target GTT orders,PENDING,Ajanta T1 ₹3,950/T2 ₹4,150; Marksans T1 ₹335/T2 ₹360
+2026-08-18,10:10,Update trading journal and positions,PENDING,Update CSV files
+2026-08-18,11:00,Monitor positions — trail stops if up 1.5x risk,PENDING,Trail to cost once triggered
+2026-08-18,13:00,Lunch — step away from screen,PENDING,Do not check phone
+2026-08-18,14:00,Review positions — adjust if needed,PENDING,Check if any target/stop hit
+2026-08-18,14:30,NO NEW ENTRIES after this time,PENDING,Discipline check
+2026-08-18,15:30,Market close — journal review,PENDING,Log all trades; plan tomorrow
+2026-08-18,16:00,Check FII/DII data,PENDING,Update regime assessment
+2026-08-18,17:00,Analyze OI buildup,PENDING,Check Nifty/Bank Nifty levels
+2026-08-18,19:00,Learning time,PENDING,Read 30 min trading book
+2026-08-18,21:00,Plan tomorrow's watchlist,PENDING,Update watchlist_tracker.csv
+

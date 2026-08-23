@@ -1,0 +1,15 @@
+Metric,Today Value,CLimit,Status,Action if Breached
+Total Capital,1500000,,OK,
+Capital Deployed,411600,1200000,OK,Do not add more positions
+Cash Reserve,1088400,300000,OK,Maintain minimum 20% cash
+Total Risk,15600,22500,OK,Risk is 1.04% — within 1.5% limit
+Open Positions,2,8,OK,Can add 6 more positions
+Sector Exposure (Pharma),100%,25%,WARNING,2 positions in same sector — monitor carefully
+Max Position Size,226800,300000,OK,20% of trading capital max
+Daily P&L,0,45000,OK,3% daily loss limit not hit
+Weekly P&L,0,75000,OK,5% weekly loss limit not hit
+India VIX,11.29,18,OK,Low vol — good for entries
+Nifty Level,24224,24000,OK,Support at 24,000 (highest put OI)
+Crude Oil,91.13,100,OK,Watch Strait of Hormuz
+INR/USD,95.43,97,OK,Currency under pressure
+

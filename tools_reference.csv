@@ -1,0 +1,44 @@
+Tool,Type,Cost,Difficulty,India Support,Best For,URL
+Chartink,Web Screener,Free/₹780/mo,Easy,NSE/BSE focused,Stock screening and scanning,chartink.com
+TradingView,Charts + Pine Script,Free/$15/mo,Medium,Good NSE coverage,Charting and strategy development,tradingview.com
+Zerodha Streak,No-Code Algo,Free with Kite,Easy,Full NSE support,No-code algo trading,streak.zerodha.com
+AlgoTest,Options Backtest,Free/₹500/mo,Medium,NSE options,Options strategy backtesting,algotest.in
+uTrade Algos,No-Code Algo,Paid,Medium,Full NSE support,Comprehensive no-code builder,utradealogs.com
+Saral,AI-Assisted Algo,Paid,Medium,Full NSE support,AI-assisted strategy logic,saral.algo
+Anadi Algo,AI-Assisted Algo,Paid,Medium,Full NSE support,English/Hindi strategy descriptions,anadialgo.com
+Backtrader,Python Library,Free,Hard,NSE via nsepy,Custom backtesting,backtrader.org
+Zipline,Python Library,Free,Hard,Limited,Quantitative backtesting,zipline.io
+openengine,Python Backtest,Free,Hard,NSE (Yahoo data),Backtest + live trading,openengine.io
+Kite Connect API,Broker API,₹2,000/mo,Hard,Full NSE support,Live algo trading,zerodha.com/kiteconnect
+SmartAPI,Broker API,Free,Medium,Full NSE support,Live algo trading (beginners),smartapi angelone
+DhanHQ API,Broker API,Free,Medium,Full NSE support,Options trading,dhan.co
+FYERS API,Broker API,Free,Medium,Full NSE support,Options trading,fyers.in
+Upstox API,Broker API,Free/Low,Medium,Full NSE support,Live trading,upstox.com/api
+Strota.in,Smart Money Dashboard,Free,Easy,India-specific,FII/DII flow analysis,strota.in
+Sensibull,Options Analytics,Free/₹800/mo,Easy,NSE options,OI analysis and options chain,sensibull.com
+Moneycontrol,Market Data,Free,Easy,India-specific,FII/DII tracker,moneycontrol.com
+Trendlyne,Fundamental Data,Free/₹400/mo,Easy,India-specific,Fundamental screening,trendlyne.com
+Screener.in,Fundamental Data,Free/₹400/mo,Easy,India-specific,Financial ratios,screener.in
+Tijori,Financial Data,Free/₹500/mo,Easy,India-specific,Financial statements,tijorifinance.com
+BacktestIndia,Factor Backtests,Free,Easy,19yr NSE data,Factor investing research,backtestindia.com
+IIMA Factor Library,Academic Data,Free,Medium,Indian factor returns,Fama-French factor research,faculty.iima.ac.in/iffm/
+EODHD,Data API,$20-50/mo,Medium,1700+ NSE stocks,Historical + fundamental data,eodhd.com
+Bloomberg,Data Terminal,₹50,000+/yr,Hard,Everything,Institutional research,bloomberg.com
+Capitaline,Fundamental Data,₹5,000-20,000/yr,Medium,Indian fundamentals,Financial data,capitaline.com
+CMIE Prowess,Fundamental Data,₹10,000-50,000/yr,Hard,Indian fundamentals,Academic research,cmie.com
+Phi-3 Mini,Local LLM,Free,Hard,English,NLP sentiment analysis,huggingface.co
+Llama 3.2,Local LLM,Free,Hard,English,NLP sentiment analysis,huggingface.co
+Gemma 2B,Local LLM,Free,Hard,English,NLP sentiment analysis,huggingface.co
+nsepy,Python Library,Free,Medium,Full NSE data,Data download,nsepy.readthedocs.io
+nselib,Python Library,Free,Medium,Full NSE data,Most comprehensive free NSE lib,github.com/ranaroussi/nselib
+aynse,Python Library,Free,Medium,Full NSE data,Live + historical data,github.com/rajan1432/aynse
+powernse,Python Library,Free,Medium,NSE bhavcopy,EOD data archives,github.com/vsjha18/powernse
+yfinance,Python Library,Free,Easy,Global + NSE (.NS),Data download,pypi.org/project/yfinance
+ta,Python Library,Free,Easy,130+ indicators,Technical analysis,pypi.org/project/ta
+ta-lib,Python Library,Free,Medium,130+ indicators,Technical analysis,talib.org
+scikit-learn,Python ML,Free,Hard,Universal,Machine learning,scikit-learn.org
+xgboost,Python ML,Free,Hard,Universal,Gradient boosting,xgboost.ai
+lightgbm,Python ML,Free,Hard,Universal,Gradient boosting,github.com/microsoft/lightgbm
+tensorflow,Python DL,Free,Hard,Universal,Deep learning,tensorflow.org
+pytorch,Python DL,Free,Hard,Universal,Deep learning,pytorch.org
+

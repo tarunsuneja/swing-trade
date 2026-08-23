@@ -1,0 +1,4 @@
+Stock,Entry Date,Entry Price,Qty,Total Investment,Stop Loss,Current Price,Current Value,Unrealized P&L,Unrealized P&L %,Target 1,Target 2,Trailing Stop,R:R Achieved,Days Held,Sector,Status,Notes
+Ajanta Pharma,2026-08-18,3780,60,226800,3650,,226800,0,0%,3950,4150,3650,0,0,Pharma,Active,New 52-week high; trailing stop at entry once +1.5x risk
+Marksans Pharma,2026-08-18,308,600,184800,295,,184800,0,0%,335,360,295,0,0,Pharma,Active,Near 52-week high; trailing stop at entry once +1.5x risk
+

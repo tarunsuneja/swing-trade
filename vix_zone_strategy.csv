@@ -1,0 +1,7 @@
+VIX Zone,Range,Strategy,Expected Return,Risk Level,Capital Needed,Win Rate,Adjustment Rules,Notes
+11-13,Low Volatility,Sell Puts + Covered Calls,1-2% monthly,Low,₹5L+,70-80%,Close at 50% profit; roll if tested,Sellers paradise; theta decay max
+13-16,Normal,Iron Condors,2-3% monthly,Low-Medium,₹5L+,65-75%,Close 50% at 50% profit; roll tested side,Optimal risk-reward zone
+16-20,Elevated,Calendar Spreads,3-5% monthly,Medium,₹5L+,60-70%,Close when IV differential normalizes,IV term structure trades
+20-25,High Vol,Buy Straddles (Gamma Scalp),5-10% monthly,High,₹10L+,40-50%,Delta hedge at ±0.30; trail profits,Profit from large moves either direction
+>25,Extreme,Cash / VIX Calls,0% (preserve),N/A,Any,N/A,Wait for VIX crush below 18,Preserve capital; best opportunities ahead
+

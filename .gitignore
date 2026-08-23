@@ -1,0 +1,11 @@
+_price_cache/
+_price_cache_n500/
+book/
+__pycache__/
+*.pyc
+scan_web.log
+_web*_*.txt
+_tmp_*
+_n500_new.txt
+_n500_fetch_fails.txt
+_n500_pullback_trades.csv

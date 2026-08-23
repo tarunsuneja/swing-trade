@@ -1,0 +1,4 @@
+Date,Stock,Direction,Entry Price,Entry Qty,Entry Value,Stop Loss,Target 1,Target 2,Exit Price,Exit Qty,Exit Value,Exit Date,P&L (₹),P&L %,R Multiple,Hold Days,Strategy,Setup Type,Sector,Market Regime,VIX at Entry,Commission,Net P&L,Rating (1-5),Notes
+2026-08-18,Ajanta Pharma,Buy,3780,60,226800,3650,3950,4150,,,,,,0,0,,Breakout,Pharma,Trending Low Vol,11.29,0,,,,New 52-week high; 4-day winning streak; pharma sector leading
+2026-08-18,Marksans Pharma,Buy,308,600,184800,295,335,360,,,,,,0,0,,Breakout,Pharma,Trending Low Vol,11.29,0,,,,Near 52-week high; pharma tailwind; strong volume
+

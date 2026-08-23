@@ -1,0 +1,3 @@
+entry_date,ticker,setup,entry,stop,target_1,target_2,qty,risk_amt,exit_date,exit_price,exit_reason,r_multiple,pnl,regime_ok,notes
+2026-08-18,Ajanta Pharma,breakout,3780,3650,3950,4150,60,7800,,,,,,YES,New 52-week high; trailing stop at entry once +1.5x risk
+2026-08-18,Marksans Pharma,breakout,308,295,335,360,600,7800,,,,,,YES,Near 52-week high; trailing stop at entry once +1.5x risk

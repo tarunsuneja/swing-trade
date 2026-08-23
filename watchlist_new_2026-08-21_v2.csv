@@ -1,0 +1,13 @@
+Stock,CMP,Entry Zone Low,Entry Zone High,Stop Loss,Target 1,Target 2,Risk:Reward,Setup Type,Sector,Watchlist Date,Status,Alert Triggered,Notes
+ABSL Capital,413.0,410,416,390.3,458.4,,1:2,Pullback,Financials,2026-08-21,RS-GATE-FAIL,NO,RS ~89 <90 (doc s16); NOT tradeable - reference only
+Hindustan Zinc,594.9,590,600,544.7,695.3,,1:2,Pullback,Metals,2026-08-21,RS-GATE-FAIL,NO,RS 79 <90 (doc s16); NOT tradeable - reference only
+Nykaa,334.0,331,337,316.5,369.0,,1:2,Pullback,Consumer Tech,2026-08-21,RS-GATE-FAIL,NO,RS ~89.9 <90 (doc s16); NOT tradeable - reference only
+ABB Power India,34190,33900,34400,31531,39508,,1:2,Pullback,Capital Goods,2026-08-21,GATED-WAIT,NO,RS 92 - LIVE ARM; qty 3; after Nifty>200DMA
+United Spirits,1556.0,1545,1565,1489.8,1688.4,,1:2,Pullback,FMCG,2026-08-21,RS-GATE-FAIL,NO,RS 62 <90 (doc s16); NOT tradeable - reference only
+Vedanta,279.0,277,281,259.5,318.0,,1:2,Pullback,Metals,2026-08-21,GATED-WAIT,NO,RS 93 - LIVE ARM; after Nifty>200DMA
+BSE Ltd,3241.0,3225,3255,3083.2,3476.7,3556.7,1:1.5,BB Reversion,Financials,2026-08-21,GATED-WAIT,NO,RSI 31.9 lower band (final close); needs reversal candle + Nifty>200DMA
+Cummins India,5107.5,5080,5130,4917.2,5399.5,5488.0,1:1.5,BB Reversion,Capital Goods,2026-08-21,GATED-WAIT,NO,RSI 31.9 lower band (final close); needs reversal candle + Nifty>200DMA
+ICICI Bank,1420.0,1412,1428,1373.8,1512.5,,1:2,Tier2 Sympathy (HDFCBANK +5.7%),Banking,2026-08-21,GATED-WAIT,NO,Laggard behind leader pop (verified final close); 10d time stop; after Nifty>200DMA
+Ashok Leyland,173.0,171,175,163.0,193.1,,1:2,Tier2 Sympathy (MOTHERSON +8.7%),Auto Ancillary,2026-08-21,GATED-WAIT,NO,Laggard behind leader pop (verified final close); 10d time stop; after Nifty>200DMA
+Bharat Forge,2063.0,2040,2085,1936.8,2315.4,,1:2,Tier2 Sympathy (MOTHERSON +8.7%),Auto Ancillary,2026-08-21,GATED-WAIT,NO,Laggard behind leader pop (verified final close); 10d time stop; after Nifty>200DMA
+Bosch Ltd,48200,47900,48500,45790,53019,,1:2,Tier2 Sympathy (MOTHERSON +8.7%),Auto Ancillary,2026-08-21,GATED-WAIT,NO,High price; qty 3 only; verified final close; after Nifty>200DMA

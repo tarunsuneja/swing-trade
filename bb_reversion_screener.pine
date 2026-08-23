@@ -1,0 +1,134 @@
+// BOLLINGER BAND REVERSION SCREENER — Indian Market (NSE)
+// Strategy #1: Mean Reversion | Win Rate: 55-85% with filters
+// Author: PortfolioTracker | Date: Aug 2026
+
+//@version=6
+indicator("BB Reversion Screener", overlay=true)
+
+// =============================================================================
+// INPUTS
+// =============================================================================
+bbLength = input.int(20, title="BB Length")
+bbMult = input.float(2.0, title="BB Multiplier")
+rsiLength = input.int(14, title="RSI Length")
+rsiBuyLevel = input.int(35, title="RSI Buy Level")
+sma200Length = input.int(200, title="200 SMA Length")
+sma20Length = input.int(20, title="20 SMA Length")
+volAvgLength = input.int(10, title="Volume Average Length")
+atrLength = input.int(14, title="ATR Length")
+
+// =============================================================================
+// CALCULATIONS
+// =============================================================================
+// Bollinger Bands
+bbBasis = ta.sma(close, bbLength)
+bbDev = bbMult * ta.stdev(close, bbLength)
+bbUpper = bbBasis + bbDev
+bbLower = bbBasis - bbDev
+
+// RSI
+rsi = ta.rsi(close, rsiLength)
+
+// Moving Averages
+sma200 = ta.sma(close, sma200Length)
+sma20 = ta.sma(close, sma20Length)
+
+// Volume
+volAvg = ta.sma(volume, volAvgLength)
+volDeclining = volume < volAvg
+
+// 20 SMA Slope (flat = within ±2% over 20 periods)
+sma20Slope = (sma20 - sma20[20]) / sma20[20] * 100
+sma20Flat = math.abs(sma20Slope) < 2.0
+
+// ATR for stop loss
+atr = ta.atr(atrLength)
+stopDistance = atr * 1.5
+
+// Candlestick Patterns
+isHammer = close > open and (low < open) and ((close - open) > 2 * (open - low)) and (high - close) < (close - open) * 0.3
+isBullishEngulfing = close > open and close[1] < open[1] and close > open[1] and open < close[1]
+isMorningStar = close[2] > open[2] and close[1] < open[1] and close > open and close > (open[2] + close[2]) / 2
+reversalCandle = isHammer or isBullishEngulfing or isMorningStar
+
+// Price at Lower Band (within 1% of lower band)
+atLowerBand = close <= bbLower * 1.01
+
+// India VIX (use ^India VIX or INDIAVIX symbol)
+// Note: VIX check must be done manually or via separate indicator
+
+// =============================================================================
+// ENTRY CONDITIONS
+// =============================================================================
+condition1 = atLowerBand                    // Price at lower BB
+condition2 = rsi < rsiBuyLevel              // RSI below 35
+condition3 = close > sma200                 // Price above 200 SMA
+condition4 = volDeclining                   // Volume declining
+condition5 = reversalCandle                 // Reversal candle formed
+condition6 = sma20Flat                      // 20 SMA flat
+// condition7 = VIX < 18 (manual check)
+// condition8 = No events (manual check)
+
+// All coded conditions met
+allConditionsMet = condition1 and condition2 and condition3 and condition4 and condition5 and condition6
+
+// =============================================================================
+// VISUAL SIGNALS
+// =============================================================================
+// Plot Bollinger Bands
+plot(bbUpper, "Upper Band", color=color.red, linewidth=1)
+plot(bbBasis, "Middle Band (20 SMA)", color=color.orange, linewidth=2)
+plot(bbLower, "Lower Band", color=color.green, linewidth=1)
+
+// Plot 200 SMA
+plot(sma200, "200 SMA", color=color.blue, linewidth=2)
+
+// Signal markers
+plotshape(allConditionsMet, title="BUY Signal", location=location.belowbar, 
+     style=shape.triangleup, size=size.normal, color=color.green, text="BUY")
+
+plotshape(condition1 and condition2 and not allConditionsMet, title="Partial Match", 
+     location=location.belowbar, style=shape.circle, size=size.tiny, color=color.yellow, text="Watch")
+
+// Background color for strong signals
+bgcolor(allConditionsMet ? color.new(color.green, 90) : na, title="Signal Background")
+
+// =============================================================================
+// ALERTS
+// =============================================================================
+alertcondition(allConditionsMet, title="BB Reversion BUY Signal", 
+     message="Bollinger Band Reversion: {{ticker}} at ₹{{close}} — ALL criteria met!")
+
+alertcondition(condition1 and condition2, title="Partial Signal", 
+     message="BB Reversion Watch: {{ticker}} — Price at lower BB + RSI < 35")
+
+// =============================================================================
+// INFO TABLE
+// =============================================================================
+var table infoTable = table.new(position.top_right, 2, 8, bgcolor=color.new(color.black, 80))
+
+if barstate.islast
+    table.cell(infoTable, 0, 0, "BB Reversion Scanner", text_color=color.white, text_size=size.normal)
+    table.cell(infoTable, 1, 0, "Status", text_color=color.white, text_size=size.normal)
+    
+    table.cell(infoTable, 0, 1, "1. Lower BB", text_color=color.white)
+    table.cell(infoTable, 1, 1, condition1 ? "✅ YES" : "❌ NO", text_color=condition1 ? color.green : color.red)
+    
+    table.cell(infoTable, 0, 2, "2. RSI < 35", text_color=color.white)
+    table.cell(infoTable, 1, 2, condition2 ? "✅ YES" : "❌ NO", text_color=condition2 ? color.green : color.red)
+    
+    table.cell(infoTable, 0, 3, "3. Above 200 SMA", text_color=color.white)
+    table.cell(infoTable, 1, 3, condition3 ? "✅ YES" : "❌ NO", text_color=condition3 ? color.green : color.red)
+    
+    table.cell(infoTable, 0, 4, "4. Volume Declining", text_color=color.white)
+    table.cell(infoTable, 1, 4, condition4 ? "✅ YES" : "❌ NO", text_color=condition4 ? color.green : color.red)
+    
+    table.cell(infoTable, 0, 5, "5. Reversal Candle", text_color=color.white)
+    table.cell(infoTable, 1, 5, condition5 ? "✅ YES" : "❌ NO", text_color=condition5 ? color.green : color.red)
+    
+    table.cell(infoTable, 0, 6, "6. 20 SMA Flat", text_color=color.white)
+    table.cell(infoTable, 1, 6, condition6 ? "✅ YES" : "❌ NO", text_color=condition6 ? color.green : color.red)
+    
+    table.cell(infoTable, 0, 7, "SIGNAL", text_color=color.white, text_size=size.normal)
+    table.cell(infoTable, 1, 7, allConditionsMet ? "🟢 BUY" : "🔴 WAIT", 
+         text_color=allConditionsMet ? color.green : color.red, text_size=size.normal)
