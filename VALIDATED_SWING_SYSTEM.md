@@ -1058,3 +1058,41 @@ Integration: `find_setups.nifty_vol_pctl()`; header prints the reading;
 rows become WATCH_VOL instead of ARMED during a hold (signal_log GATE
 row records OPEN_VOLHOLD); web banner shows vol pctl + explicit hold
 warning; suppressed table now carries per-row reasons.
+
+---
+
+## 28. SYSTEM v2 - consolidated stack validation (Aug 23) - ADOPTED (user decision)
+
+All adopted overlays were validated INDIVIDUALLY; this test stacks them
+on the anchor engine (`test_system_v2.py`). Freshness/H12 and
+official-sector TIER2 are live-scanner layers - nothing extra to
+simulate (backtest already enters at trigger+1).
+
+| Configuration | CAGR | MaxDD | taken |
+|---|---|---|---|
+| V0 baseline | 27.6% | -34.8% | 1294 |
+| V1 corr-guard only | 26.8% | -29.5% | 1174 |
+| V2 vol-hold only | 27.4% | -27.1% | 1213 |
+| **V3 full stack = SYSTEM v2** | **24.7%** | **-18.6%** | **1108** |
+
+Pre-registered bar was DD<=-30% AND CAGR cost <=2pts AND no MC terminal
+destruction. Result: **V3 MISSED the bar** (+16.2pts DD but 2.9pt CAGR
+cost; MC median terminal 62x vs 93x = real compounding loss).
+
+Mechanism: corr-guard and vol-hold fire in the same crisis-recovery
+windows, jointly removing the strongest rebound cohort (PF 2.15 at
+high-vol/gate-open). Half-split stable (25.0%/24.9%). V2-only dominated
+V1-only on both axes.
+
+**DECISION (user, informed of all numbers): keep the FULL STACK as the
+live rule-set** - knowingly overriding the pre-registered CAGR-cost bar,
+paying ~2.9pts/yr for max drawdown -34.8% -> -18.6%. Documented here so
+the override is on the record, not silent goalpost-moving.
+
+Web page gains a "System v2" tab: live configuration table, stacked
+performance, robustness notes, and a standing warning: do NOT add
+further entry filters without re-running `test_system_v2.py`.
+
+Live enforcement map: vol-hold automatic in scanner (WATCH_VOL);
+corr-guard remains a pre-entry manual check (`py corr_guard.py TICKER...`
+vs open positions); freshness/gap rules enforced by scanner columns.

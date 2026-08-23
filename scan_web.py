@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 r"""Live web view of the validated scanner (find_setups.py).
 
 Run:   py scan_web.py          -> http://localhost:8787 opens automatically
@@ -159,82 +159,82 @@ def badge(kind):
 
 LOGIC = """
 <div class="lg">
-<h3>1 · Universe &amp; data</h3>
+<h3>1 Â· Universe &amp; data</h3>
 <p>Top-150 NSE stocks by market cap (139 pass the minimum-history bar),
-daily OHLCV from TradingView. Backtests run 2006→today on the same cached
+daily OHLCV from TradingView. Backtests run 2006â†’today on the same cached
 files the scanner reads. Signals are computed on END-OF-DAY data after
-market close — entries happen NEXT session at open, never intraday.</p>
+market close â€” entries happen NEXT session at open, never intraday.</p>
 
-<h3>2 · Regime gate (always applied)</h3>
+<h3>2 Â· Regime gate (always applied)</h3>
 <p>No NEW long positions unless Nifty &gt; its own 200-day moving average.
 Existing positions are always managed by their stops regardless of the gate.
 This single index-level filter flips the book off in bear phases.</p>
 
-<h3>3 · RS≥90 quality gate (PULLBACK only)</h3>
+<h3>3 Â· RSâ‰¥90 quality gate (PULLBACK only)</h3>
 <p>O'Neil-style relative strength: each stock's trailing 252-session return
-is cross-sectionally ranked 1–99 against this universe on the signal date.
-PULLBACK entries require RS ≥ 90. Evidence: uptrend-regime profit factor
-1.38 → 1.72, gated portfolio CAGR 13.7% → ~27.6%, stable across 2010-17 and
+is cross-sectionally ranked 1â€“99 against this universe on the signal date.
+PULLBACK entries require RS â‰¥ 90. Evidence: uptrend-regime profit factor
+1.38 â†’ 1.72, gated portfolio CAGR 13.7% â†’ ~27.6%, stable across 2010-17 and
 2018-26 eras. BB_REV / TIER2 rows carry RS as info only.</p>
 
-<h3>4 · Strategy A — TREND PULLBACK (core engine)</h3>
+<h3>4 Â· Strategy A â€” TREND PULLBACK (core engine)</h3>
 <table>
 <tr><th>Element</th><th>Rule</th></tr>
 <tr><td>Trend</td><td>Close &gt; SMA200 AND SMA200 higher than 20 sessions ago AND Close &gt; SMA50</td></tr>
 <tr><td>Dip</td><td>Low touched SMA20 within the last 5 sessions</td></tr>
 <tr><td>Trigger</td><td>Close &gt; previous session's high AND Close &gt; SMA20 (reclaim day)</td></tr>
 <tr><td>Entry</td><td>Next session's open</td></tr>
-<tr><td>Stop</td><td>min(lowest low of last 5 bars, entry − 2×ATR14) − 0.25×ATR buffer</td></tr>
-<tr><td>Target</td><td>2 × risk (2R)</td></tr>
+<tr><td>Stop</td><td>min(lowest low of last 5 bars, entry âˆ’ 2Ã—ATR14) âˆ’ 0.25Ã—ATR buffer</td></tr>
+<tr><td>Target</td><td>2 Ã— risk (2R)</td></tr>
 <tr><td>Time stop</td><td>Exit after 20 sessions if neither hit</td></tr>
 </table>
-<p><b>Evidence:</b> n=28,630 trades since 2006 · win 50.1% · avg +1.02%
-net/trade · profit factor 1.34.</p>
+<p><b>Evidence:</b> n=28,630 trades since 2006 Â· win 50.1% Â· avg +1.02%
+net/trade Â· profit factor 1.34.</p>
 
-<h3>5 · Strategy B — BB REVERSION (filler only)</h3>
-<p>RSI14 &lt; 35 · Close &gt; SMA200 · Close ≤ lower Bollinger(20,2) × 1.02 ·
-volume &lt; SMA10(volume). Entry next open; stop 1.5×ATR; exit at mid-band
-(SMA20) or 8 sessions. <b>Evidence:</b> n≈1,016 · PF 1.28 — small edge,
+<h3>5 Â· Strategy B â€” BB REVERSION (filler only)</h3>
+<p>RSI14 &lt; 35 Â· Close &gt; SMA200 Â· Close â‰¤ lower Bollinger(20,2) Ã— 1.02 Â·
+volume &lt; SMA10(volume). Entry next open; stop 1.5Ã—ATR; exit at mid-band
+(SMA20) or 8 sessions. <b>Evidence:</b> nâ‰ˆ1,016 Â· PF 1.28 â€” small edge,
 used to keep slots busy, never sized up.</p>
 
-<h3>6 · Strategy C — TIER-II SYMPATHY</h3>
+<h3>6 Â· Strategy C â€” TIER-II SYMPATHY</h3>
 <p>When a sector LEADER (largest market-cap stock of its sector) pops
-≥ +5% on ≥ 2× normal volume, buy the same-sector LAGGARD that: correlates
-≥ 0.55 over 120 sessions, moved less than half the leader's gain, sits above
-a rising SMA200, and clears the ₹5 Cr/day liquidity floor. Same stop
-geometry as PULLBACK, 10-session time stop. <b>Evidence:</b> n=66 ·
+â‰¥ +5% on â‰¥ 2Ã— normal volume, buy the same-sector LAGGARD that: correlates
+â‰¥ 0.55 over 120 sessions, moved less than half the leader's gain, sits above
+a rising SMA200, and clears the â‚¹5 Cr/day liquidity floor. Same stop
+geometry as PULLBACK, 10-session time stop. <b>Evidence:</b> n=66 Â·
 PF 1.61 overall, 2.02 in Nifty uptrends. <b>Caveat:</b> currently running
-on an interim Yahoo sector map (coarser) — treat TIER2 rows as
+on an interim Yahoo sector map (coarser) â€” treat TIER2 rows as
 lower-confidence until the original map is restored.</p>
 
-<h3>7 · Position sizing</h3>
-<p>Capital ₹6,00,000 · risk 1.5% per trade = ₹9,000 ·
-qty = ⌊9,000 ÷ (entry − stop)⌋ · hard notional cap ₹1,50,000 per position ·
+<h3>7 Â· Position sizing</h3>
+<p>Capital â‚¹6,00,000 Â· risk 1.5% per trade = â‚¹9,000 Â·
+qty = âŒŠ9,000 Ã· (entry âˆ’ stop)âŒ‹ Â· hard notional cap â‚¹1,50,000 per position Â·
 maximum 6 concurrent slots. All backtest numbers already include 0.30%
 round-trip costs.</p>
 
-<h3>8 · Robustness evidence</h3>
+<h3>8 Â· Robustness evidence</h3>
 <ul>
-<li><b>Fragility sweep:</b> stop buffer 0→0.5×ATR and target 1.5R→3R sit on
-smooth plateaus (PF 1.31–1.37). The 20-session time stop is the one
-sensitive knob — shortening it collapses the edge. Never shorten it.</li>
+<li><b>Fragility sweep:</b> stop buffer 0â†’0.5Ã—ATR and target 1.5Râ†’3R sit on
+smooth plateaus (PF 1.31â€“1.37). The 20-session time stop is the one
+sensitive knob â€” shortening it collapses the edge. Never shorten it.</li>
 <li><b>Monte Carlo</b> (2,000 paths on the actual 1,294-trade taken
-sequence): terminal equity 90% CI [31×, 284×]; forward-12-month projection
-median +27%, probability of a negative year ≈ 5.5%. Realized tails were
-worse than bootstrap bands — expect drawdowns beyond −30% and losing
+sequence): terminal equity 90% CI [31Ã—, 284Ã—]; forward-12-month projection
+median +27%, probability of a negative year â‰ˆ 5.5%. Realized tails were
+worse than bootstrap bands â€” expect drawdowns beyond âˆ’30% and losing
 streaks up to ~18 trades.</li>
 </ul>
 
-<h3>9 · Tested and REJECTED (kept out on purpose)</h3>
-<p>52-week-high breakout (PF 0.94) · PEAD proxy · entire short side ·
-metals/crypto regime timing · ADX strength filter · post-crash cooldown ·
-fundamental PAT&lt;0 gate (unvalidatable data) · golden-pocket fib depth
-(redundant after RS≥90) · SMC/FVG/order-block suite · PCR / Max Pain /
+<h3>9 Â· Tested and REJECTED (kept out on purpose)</h3>
+<p>52-week-high breakout (PF 0.94) Â· PEAD proxy Â· entire short side Â·
+metals/crypto regime timing Â· ADX strength filter Â· post-crash cooldown Â·
+fundamental PAT&lt;0 gate (unvalidatable data) Â· golden-pocket fib depth
+(redundant after RSâ‰¥90) Â· SMC/FVG/order-block suite Â· PCR / Max Pain /
 OI walls (intraday phenomena, no validatable history).</p>
 
-<h3>10 · Known caveats</h3>
-<p>Universe = today's large caps → survivorship bias makes backtest numbers
-upper bounds. Sector map interim (see #6). Signals go stale — re-run the
+<h3>10 Â· Known caveats</h3>
+<p>Universe = today's large caps â†’ survivorship bias makes backtest numbers
+upper bounds. Sector map interim (see #6). Signals go stale â€” re-run the
 scanner before acting on any levels shown here.</p>
 </div>
 """
@@ -247,59 +247,113 @@ FAMILY_ALLOC = {
         ("Gold", 10), ("Arbitrage", 8), ("Liquid/Cash", 5),
     ],
     "books": [
-        ("Personal — Monthly SIP ₹2,00,000/mo", [
-            ("Navi Nifty 50 Index", "₹40,000", "20%"),
-            ("Kotak Nifty Next 50", "₹24,000", "12%"),
-            ("Invesco India Mid Cap", "₹40,000", "20%"),
-            ("Bandhan Small Cap", "₹10,000", "5%"),
-            ("US: VOO ₹15K + QQQM ₹10K + SOXQ ₹5K", "₹30,000", "15%"),
-            ("PPFAS Flexi Cap", "₹10,000", "5%"),
-            ("GoldBees ETF", "₹20,000", "10%"),
-            ("Arbitrage Fund (direct-growth)", "₹16,000", "8%"),
-            ("Liquid Fund", "₹10,000", "5%"),
+        ("Personal â€” Monthly SIP â‚¹2,00,000/mo", [
+            ("Navi Nifty 50 Index", "â‚¹40,000", "20%"),
+            ("Kotak Nifty Next 50", "â‚¹24,000", "12%"),
+            ("Invesco India Mid Cap", "â‚¹40,000", "20%"),
+            ("Bandhan Small Cap", "â‚¹10,000", "5%"),
+            ("US: VOO â‚¹15K + QQQM â‚¹10K + SOXQ â‚¹5K", "â‚¹30,000", "15%"),
+            ("PPFAS Flexi Cap", "â‚¹10,000", "5%"),
+            ("GoldBees ETF", "â‚¹20,000", "10%"),
+            ("Arbitrage Fund (direct-growth)", "â‚¹16,000", "8%"),
+            ("Liquid Fund", "â‚¹10,000", "5%"),
         ]),
-        ("Wife — Weekly STP ₹30,000/wk (₹1,20,000/mo)", [
-            ("Navi Nifty 50 Index", "₹6,000", "20%"),
-            ("Kotak Nifty Next 50", "₹3,500", "11.7%"),
-            ("Invesco India Mid Cap", "₹6,000", "20%"),
-            ("Bandhan Small Cap", "₹1,500", "5%"),
-            ("US feeder FoF", "₹4,500", "15%"),
-            ("PPFAS Flexi Cap", "₹1,500", "5%"),
-            ("GoldBees ETF", "₹3,000", "10%"),
-            ("Arbitrage Fund", "₹2,500", "8.3%"),
-            ("Liquid Fund", "₹1,500", "5%"),
+        ("Wife â€” Weekly STP â‚¹30,000/wk (â‚¹1,20,000/mo)", [
+            ("Navi Nifty 50 Index", "â‚¹6,000", "20%"),
+            ("Kotak Nifty Next 50", "â‚¹3,500", "11.7%"),
+            ("Invesco India Mid Cap", "â‚¹6,000", "20%"),
+            ("Bandhan Small Cap", "â‚¹1,500", "5%"),
+            ("US feeder FoF", "â‚¹4,500", "15%"),
+            ("PPFAS Flexi Cap", "â‚¹1,500", "5%"),
+            ("GoldBees ETF", "â‚¹3,000", "10%"),
+            ("Arbitrage Fund", "â‚¹2,500", "8.3%"),
+            ("Liquid Fund", "â‚¹1,500", "5%"),
         ]),
-        ("Mother — Weekly STP ₹35,000/wk (₹1,40,000/mo)", [
-            ("Navi Nifty 50 Index", "₹7,000", "20%"),
-            ("Kotak Nifty Next 50", "₹4,250", "12.1%"),
-            ("Invesco India Mid Cap", "₹7,000", "20%"),
-            ("Bandhan Small Cap", "₹1,750", "5%"),
-            ("US feeder FoF", "₹5,250", "15%"),
-            ("PPFAS Flexi Cap", "₹1,750", "5%"),
-            ("GoldBees ETF", "₹3,500", "10%"),
-            ("Arbitrage Fund", "₹2,750", "7.9%"),
-            ("Liquid Fund", "₹1,750", "5%"),
+        ("Mother â€” Weekly STP â‚¹35,000/wk (â‚¹1,40,000/mo)", [
+            ("Navi Nifty 50 Index", "â‚¹7,000", "20%"),
+            ("Kotak Nifty Next 50", "â‚¹4,250", "12.1%"),
+            ("Invesco India Mid Cap", "â‚¹7,000", "20%"),
+            ("Bandhan Small Cap", "â‚¹1,750", "5%"),
+            ("US feeder FoF", "â‚¹5,250", "15%"),
+            ("PPFAS Flexi Cap", "â‚¹1,750", "5%"),
+            ("GoldBees ETF", "â‚¹3,500", "10%"),
+            ("Arbitrage Fund", "â‚¹2,750", "7.9%"),
+            ("Liquid Fund", "â‚¹1,750", "5%"),
         ]),
-        ("HUF — Weekly STP ₹75,000/wk (₹3,00,000/mo)", [
-            ("Navi Nifty 50 Index", "₹15,000", "20%"),
-            ("Kotak Nifty Next 50", "₹9,000", "12%"),
-            ("Invesco India Mid Cap", "₹15,000", "20%"),
-            ("Bandhan Small Cap", "₹3,750", "5%"),
-            ("US feeder FoF", "₹11,250", "15%"),
-            ("PPFAS Flexi Cap", "₹3,750", "5%"),
-            ("GoldBees ETF", "₹7,500", "10%"),
-            ("Arbitrage Fund", "₹6,000", "8%"),
-            ("Liquid Fund", "₹3,750", "5%"),
+        ("HUF â€” Weekly STP â‚¹75,000/wk (â‚¹3,00,000/mo)", [
+            ("Navi Nifty 50 Index", "â‚¹15,000", "20%"),
+            ("Kotak Nifty Next 50", "â‚¹9,000", "12%"),
+            ("Invesco India Mid Cap", "â‚¹15,000", "20%"),
+            ("Bandhan Small Cap", "â‚¹3,750", "5%"),
+            ("US feeder FoF", "â‚¹11,250", "15%"),
+            ("PPFAS Flexi Cap", "â‚¹3,750", "5%"),
+            ("GoldBees ETF", "â‚¹7,500", "10%"),
+            ("Arbitrage Fund", "â‚¹6,000", "8%"),
+            ("Liquid Fund", "â‚¹3,750", "5%"),
         ]),
     ],
     "blended": [
-        ("Nifty 50", "₹1,52,000", "20.0%"), ("Nifty Next 50", "₹91,000", "12.0%"),
-        ("Mid Cap", "₹1,52,000", "20.0%"), ("Small Cap", "₹38,000", "5.0%"),
-        ("US Equity", "₹1,14,000", "15.0%"), ("Flexi Cap", "₹38,000", "5.0%"),
-        ("Gold", "₹76,000", "10.0%"), ("Arbitrage", "₹61,000", "8.0%"),
-        ("Liquid/Cash", "₹38,000", "5.0%"),
+        ("Nifty 50", "â‚¹1,52,000", "20.0%"), ("Nifty Next 50", "â‚¹91,000", "12.0%"),
+        ("Mid Cap", "â‚¹1,52,000", "20.0%"), ("Small Cap", "â‚¹38,000", "5.0%"),
+        ("US Equity", "â‚¹1,14,000", "15.0%"), ("Flexi Cap", "â‚¹38,000", "5.0%"),
+        ("Gold", "â‚¹76,000", "10.0%"), ("Arbitrage", "â‚¹61,000", "8.0%"),
+        ("Liquid/Cash", "â‚¹38,000", "5.0%"),
     ],
 }
+
+
+def v2_tab():
+    cfg = [
+        ("Universe", "Top-150 NSE by turnover, liquidity-filtered"),
+        ("Core signal", "PULLBACK: uptrend + SMA20 dip + prior-high reclaim (s8)"),
+        ("Satellite", "TIER2 sympathy on OFFICIAL NSE sectors, gate-gated (s26)"),
+        ("Mean reversion", "BB_REV RSI&lt;35 at lower band, info-only rank"),
+        ("Book gate", "RS â‰¥ 90 mandatory for PULLBACK entries (s16)"),
+        ("Regime gate", "No new longs unless Nifty &gt; 200-DMA (s9)"),
+        ("Vol hold (H14)", "No NEW entries when Nifty ATR% â‰¥ trailing-yr 90th pctl (s27)"),
+        ("Corr guard (H10)", "Skip candidate with 120d corr â‰¥ 0.80 vs any OPEN position â€” run <span class='mono'>py corr_guard.py TICKERâ€¦</span> before entry (s23)"),
+        ("Freshness (H12)", "Signals expire after ONE session; target-filled / stop-broken auto-dropped (s25)"),
+        ("Gap policy (H9)", "Skip fill if next open &lt; stop or &gt; max chase (+0.5 ATR)"),
+        ("Sizing", "â‚¹6,00,000 satellite Â· 1.5% risk/trade Â· max â‚¹1,50,000 notional Â· 6 slots"),
+    ]
+    rows_cfg = "".join(f"<tr><td><b>{k}</b></td><td>{v}</td></tr>" for k, v in cfg)
+    perf = [
+        ("Baseline (RS90 + regime gate only)", "27.6%", "-34.8%", "1294"),
+        ("+ Corr guard only", "26.8%", "-29.5%", "1174"),
+        ("+ Vol hold only", "27.4%", "-27.1%", "1213"),
+        ("<b>SYSTEM v2 = full stack (LIVE)</b>", "<b>24.7%</b>", "<b>-18.6%</b>", "1108"),
+    ]
+    rows_p = "".join(f"<tr><td>{a}</td><td>{b}</td><td>{c}</td><td>{d}</td></tr>"
+                     for a, b, c, d in perf)
+    return f"""
+<div class="lg">
+<p style="margin-top:0"><b>System v2</b> is the live rule-set: every layer
+below passed its own hypothesis test (doc sections referenced), then the
+stack was validated end-to-end (<span class="mono">test_system_v2.py</span>, doc s28).
+User decision (Aug-2026): keep the full stack knowingly paying ~2.9pts CAGR
+vs baseline in exchange for max drawdown -34.8% â†’ <b>-18.6%</b> over
+1975-2026 simulation.</p>
+
+<h2>Live configuration</h2>
+<table><tr><th style="width:190px">Layer</th><th>Rule</th></tr>{rows_cfg}</table>
+
+<h2>Stacked performance (1975-2026, anchor engine)</h2>
+<table><tr><th>Configuration</th><th>CAGR</th><th>Max DD</th><th>Trades</th></tr>{rows_p}</table>
+
+<h2>Robustness of the live stack</h2>
+<p>Half-split CAGR 25.0% / 24.9% (stable across eras). Monte Carlo
+(4,000 paths): drawdown tails much shallower than baseline (block p5 âˆ’25%
+vs âˆ’30%, median âˆ’16% vs âˆ’18%); terminal-equity quantiles lower than
+baseline (median 62x vs 93x) â€” this is the explicit price paid for crash
+protection, accepted by decision.</p>
+<div style="font-size:13px;color:#8b949e">
+Interaction warning (measured, s28): corr-guard and vol-hold fire in the
+same crisis-recovery windows and together remove the strongest rebound
+cohort (PF 2.15 at high vol, gate open). Do NOT add further entry filters
+without re-running the consolidated test.
+</div>
+</div>
+"""
 
 
 def alloc_tab():
@@ -312,21 +366,21 @@ def alloc_tab():
     blend = "".join(f"<tr><td>{n}</td><td>{a}</td><td>{p}</td></tr>" for n, a, p in FAMILY_ALLOC["blended"])
     return f"""
 <div class="lg">
-<p style="margin-top:0">Long-term family plan (separate from the ₹6L swing satellite).
+<p style="margin-top:0">Long-term family plan (separate from the â‚¹6L swing satellite).
 Source of truth: <span class="mono">CORRECTED_ALLOCATION_V4.md</span>; dashboard generator
-<span class="mono">src/dashboard_gen.py</span>. Total deployment ₹7,60,000/mo across four books.</p>
+<span class="mono">src/dashboard_gen.py</span>. Total deployment â‚¹7,60,000/mo across four books.</p>
 
 <h2>Headline target blend</h2>
 <table><tr><th>Category</th><th>Target %</th></tr>{head}</table>
 {books}
-<h2>Family blended verification — ₹7,60,000/mo</h2>
-<table><tr><th>Category</th><th>₹/month</th><th>Blended %</th></tr>{blend}</table>
+<h2>Family blended verification â€” â‚¹7,60,000/mo</h2>
+<table><tr><th>Category</th><th>â‚¹/month</th><th>Blended %</th></tr>{blend}</table>
 <div class="lg" style="font-size:13px;color:#8b949e">
 Notes: US for Wife/Mother/HUF via Indian feeder FoFs (post-Apr-2023 feeders taxed at slab
-rate — if that drag matters, concentrate US in the Personal book; family total stays 15%).
+rate â€” if that drag matters, concentrate US in the Personal book; family total stays 15%).
 Arbitrage funds are equity-taxed and hold the correction-deployment reserve (deploy per
-tier rules at Nifty −15/−20/−25/−30%). Goal math: ₹7.6L/mo × 19 yrs ≈ ₹39 Cr @8%,
-₹49 Cr @10%, ₹61 Cr @12%.
+tier rules at Nifty âˆ’15/âˆ’20/âˆ’25/âˆ’30%). Goal math: â‚¹7.6L/mo Ã— 19 yrs â‰ˆ â‚¹39 Cr @8%,
+â‚¹49 Cr @10%, â‚¹61 Cr @12%.
 </div>
 </div>
 """
@@ -335,16 +389,29 @@ tier rules at Nifty −15/−20/−25/−30%). Goal math: ₹7.6L/mo × 19 yrs �
 def render():
     s = STATE
     gate_cls = "open" if s["ok"] else "closed"
-    gate_txt = ("REGIME GATE OPEN — longs allowed"
-                if s["ok"] else "REGIME GATE CLOSED — watchlist only")
+    gate_txt = ("REGIME GATE OPEN â€” longs allowed"
+                if s["ok"] else "REGIME GATE CLOSED â€” watchlist only")
+    def tstop(kind):
+        k = str(kind).split("(")[0]
+        return {"PULLBACK": "20d", "TIER2": "10d", "BB_REV": "8d"}.get(k, "")
+
+    def tgt_cell(r):
+        tm = r.get("target_mid", "")
+        if tm != tm:
+            tm = ""
+        t2 = r.get("target_2R", "")
+        if t2 != t2:
+            t2 = ""
+        out = str(t2)
+        if str(tm) != "":
+            out += f" / {tm} (SMA20)"
+        return out
+
     rows_a = ""
     for idx, r in enumerate(s["armed"], start=1):
         mc = r.get("max_chase", "")
         if mc != mc:  # NaN guard for old artifact files
             mc = ""
-        tm = r.get("target_mid", "")
-        if tm != tm:
-            tm = ""
         try:
             rank = int(r.get("rank", idx))
         except (TypeError, ValueError):
@@ -360,8 +427,10 @@ def render():
                    f"<td><b>{html.escape(str(r.get('ticker','')))}</b></td>"
                    f"<td>{r.get('signal_date','')}</td>"
                    f"<td><span class='badge' style='background:{a_col}22;color:{a_col};border:1px solid {a_col}55'>age {a_txt}</span></td>"
-                   f"<td>{r.get('entry_zone','')}</td><td>{r.get('stop','')}</td>"
-                   f"<td>{r.get('target_2R','')}{f' / {tm} (SMA20)' if str(tm) != '' else ''}</td>"
+                   f"<td>{r.get('entry_zone','')}</td>"
+                   f"<td class='mono'>{r.get('stop','')}</td>"
+                   f"<td class='mono'>{tgt_cell(r)}</td>"
+                   f"<td>{tstop(r.get('setup',''))}</td>"
                    f"<td>{mc}</td>"
                    f"<td>{r.get('qty','')}</td><td>{r.get('notional','')}</td>"
                    f"<td>{r.get('rs','')}</td><td>{r.get('rsi','')}</td></tr>")
@@ -370,7 +439,12 @@ def render():
         f"<td><b>{html.escape(str(r.get('ticker','')))}</b></td>"
         f"<td>{r.get('signal_date','')}</td>"
         f"<td>{r.get('age','')}</td>"
-        f"<td>{r.get('entry_zone','')}</td><td>{r.get('rs','')}</td>"
+        f"<td>{r.get('entry_zone','')}</td>"
+        f"<td class='mono'>{r.get('stop','')}</td>"
+        f"<td class='mono'>{tgt_cell(r)}</td>"
+        f"<td>{tstop(r.get('setup',''))}</td>"
+        f"<td>{r.get('max_chase','') if r.get('max_chase','') == r.get('max_chase','') else ''}</td>"
+        f"<td>{r.get('rs','')}</td>"
         f"<td>{html.escape(str(r.get('reason', 'RS&lt;90')))}</td></tr>"
         for r in s["supp"])
     rows_l = "".join(
@@ -406,32 +480,34 @@ h2{{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:#8b949e;mar
 .lg ul{{margin:6px 0;padding-left:22px}}
 .hidden{{display:none}}
 </style></head><body>
-<h1>Swing Scanner — validated setups</h1>
-<div class="sub">source artifact: {html.escape(s['source'])} · generated {s['generated']} · page reloads every {PAGE_RELOAD_SECS}s · data rescan every {INTERVAL}s</div>
+<h1>Swing Scanner â€” validated setups</h1>
+<div class="sub">source artifact: {html.escape(s['source'])} Â· generated {s['generated']} Â· page reloads every {PAGE_RELOAD_SECS}s Â· data rescan every {INTERVAL}s</div>
 <div class="nav">
 <button data-t="live" onclick="showTab('live')">Live Setups</button>
 <button data-t="logic" onclick="showTab('logic')">Methodology</button>
+<button data-t="v2" onclick="showTab('v2')">System v2</button>
 <button data-t="alloc" onclick="showTab('alloc')">Family Plan</button>
 </div>
 <div id="tab-live">
 <div class="banner {gate_cls}">{gate_txt}
-<span class="dist">Nifty {s['nifty']:,} vs 200-DMA {s['sma200']:,.0f} ({s['dist']:+.2f}%) · vol pctl {s['vpctl']}/100{' — <b>[VOL HOLD: no new entries, H14]</b>' if s['vpctl'] >= 90 else ''}</span></div>
+<span class="dist">Nifty {s['nifty']:,} vs 200-DMA {s['sma200']:,.0f} ({s['dist']:+.2f}%) Â· vol pctl {s['vpctl']}/100{' â€” <b>[VOL HOLD: no new entries, H14]</b>' if s['vpctl'] >= 90 else ''}</span></div>
 <h2>Armed setups ({len(s['armed'])})</h2>
-{'<table><tr><th>#</th><th>Setup</th><th>Ticker</th><th>Signal date</th><th>Age</th><th>Entry zone</th><th>Stop</th><th>Target</th><th>Max chase</th><th>Qty</th><th>Notional ₹</th><th>RS</th><th>RSI</th></tr>' + rows_a + '</table>' if rows_a else '<div class="none">No qualifying setups.</div>'}
-{('<h2>Suppressed / watch (' + str(len(s['supp'])) + ')</h2><table><tr><th>Setup</th><th>Ticker</th><th>Signal date</th><th>Age</th><th>Entry zone</th><th>RS</th><th>Reason</th></tr>' + rows_s + '</table>') if rows_s else ''}
+{'<table><tr><th>#</th><th>Setup</th><th>Ticker</th><th>Signal date</th><th>Age</th><th>Entry zone</th><th>Stop loss</th><th>Target / exit</th><th>Time stop</th><th>Max chase</th><th>Qty</th><th>Notional â‚¹</th><th>RS</th><th>RSI</th></tr>' + rows_a + '</table>' if rows_a else '<div class="none">No qualifying setups.</div>'}
+{('<h2>Suppressed / watch (' + str(len(s['supp'])) + ')</h2><table><tr><th>Setup</th><th>Ticker</th><th>Signal date</th><th>Age</th><th>Entry zone</th><th>Stop loss</th><th>Target / exit</th><th>Time stop</th><th>Max chase</th><th>RS</th><th>Reason</th></tr>' + rows_s + '</table>') if rows_s else ''}
 <h2>Signal log (latest 25)</h2>
 <table><tr><th>Date</th><th>Ticker</th><th>Setup</th><th>Action</th><th>Entry zone</th><th>Gate</th></tr>{rows_l}</table>
-<div class="footer">Sizing: ₹6,00,000 satellite · risk 1.5%/trade (₹9,000) · max notional ₹1,50,000 · 6 slots.<br>
-Execution: enter NEXT session near signal close (limit orders) · SKIP if next open &lt; stop or &gt; max chase (H9 gap policy) · resting SL at broker on fill · exits per validated rules (pullback/tier2 2R + 20d/10d time stop · bb_rev SMA20 or 8d).<br>
-Freshness (H12): signals expire after ONE session — age 0 keeps full edge, age 1 retains 81%; target-filled or stop-broken setups are dropped by the scanner.<br>
-Vol hold (H14): when Nifty's own ATR% is in the top decile of its trailing year (pctl ≥90) NO new entries are taken — validated DD −34.8%→−27.1% at 0.2pt CAGR cost.<br>
-Ranking (# column, presentation only): class by validated role (PULLBACK core → TIER2 satellite → BB_REV), then raw RS descending — the only ranking metric with proven standalone edge (s16/H11).
-Entries allowed ONLY while gate OPEN. Display mirrors CLI output — no trading logic here.</div>
+<div class="footer">Sizing: â‚¹6,00,000 satellite Â· risk 1.5%/trade (â‚¹9,000) Â· max notional â‚¹1,50,000 Â· 6 slots.<br>
+Execution: enter NEXT session near signal close (limit orders) Â· SKIP if next open &lt; stop or &gt; max chase (H9 gap policy) Â· resting SL at broker on fill Â· exits per validated rules (pullback/tier2 2R + 20d/10d time stop Â· bb_rev SMA20 or 8d).<br>
+Freshness (H12): signals expire after ONE session â€” age 0 keeps full edge, age 1 retains 81%; target-filled or stop-broken setups are dropped by the scanner.<br>
+Vol hold (H14): when Nifty's own ATR% is in the top decile of its trailing year (pctl â‰¥90) NO new entries are taken â€” validated DD âˆ’34.8%â†’âˆ’27.1% at 0.2pt CAGR cost.<br>
+Ranking (# column, presentation only): class by validated role (PULLBACK core â†’ TIER2 satellite â†’ BB_REV), then raw RS descending â€” the only ranking metric with proven standalone edge (s16/H11).
+Entries allowed ONLY while gate OPEN. Display mirrors CLI output â€” no trading logic here.</div>
 </div>
 <div id="tab-logic" class="hidden">{LOGIC}</div>
+<div id="tab-v2" class="hidden">{v2_tab()}</div>
 <div id="tab-alloc" class="hidden">{alloc_tab()}</div>
 <script>
-const TABS = ['live', 'logic', 'alloc'];
+const TABS = ['live', 'logic', 'v2', 'alloc'];
 function showTab(id){{
   TABS.forEach(t => document.getElementById('tab-'+t).style.display = t===id ? 'block' : 'none');
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on', b.dataset.t===id));
