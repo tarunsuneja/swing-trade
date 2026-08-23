@@ -973,3 +973,40 @@ Scanner integration (`find_setups.py`):
 - `signal_log.csv` schema extended with `age` (auto-migrated once).
 - Web page: Signal date + colour-coded Age column; footer states the
   expiry rule. TIER2 rows report age 0 by construction.
+
+---
+
+## 26. H13 - TIER2 rebuilt on official NSE sectors (Aug 23) - ADOPTED
+
+**Question (user Phase-1 item #8):** the sympathy scan still ran on the
+coarse yfinance/GICS-style map (11 buckets, TV-outage stopgap). The
+official NSE Industry classification (20 sectors, built Phase-1.2 as
+sectors_nse.csv) had never been promoted because it lacks market caps.
+
+Method (`test_tier2_official.py`): merge NSE sectors + yfinance caps
+into the standard schema (sanitised tickers fixed: M_M->M&M, GVT_D->
+GVT&D), rebuild signals BOTH ways on identical price data, simulate
+with the existing engine.
+
+Head-to-head (1975-era data through Aug-2026):
+
+| Segment | Old map | Official NSE map |
+|---|---|---|
+| ALL | n=58 PF=1.19 | n=66 PF=1.47 |
+| Nifty uptrend | n=51 win 56.9% avg +0.86% PF 1.34 | **n=56 win 66.1% avg +1.98% PF 1.99** |
+| Nifty downtrend | n=7 PF 0.55 | n=10 PF 0.31 |
+
+Only 45 of 124 signal slots overlap old vs new - the map materially
+changes what gets traded. All 15 sector leaders changed (e.g.
+Industrials split into Capital Goods [HAL] / Construction [LT]).
+Downtrend remains toxic -> regime gate stays mandatory.
+
+GATE PASSED (uptrend n>=30, PF>=1.4). `promote_sectors.py` wrote the
+merged map to _price_cache/sectors.csv (old copy kept at
+sectors_gics_backup.csv); get_sector_map/find_setups needed no code
+change. Live effect verified: LT->BEL/HAL replaced by e.g.
+HDFCBANK->ICICIBANK, MARUTI->MOTHERSON.
+
+Caveat: n stays modest (56 uptrend trades) and the downtrend segment
+(0.31) reinforces that TIER2 rows are ONLY actionable with the gate
+open - already enforced everywhere.
