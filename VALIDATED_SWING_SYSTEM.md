@@ -936,3 +936,40 @@ hypothesis BEFORE anyone trades on it. Flipping the score sign now
 would be curve-fitting.
 
 *Source: `test_score_ranking.py`, trades `_score_trades.csv`.*
+
+---
+
+## 25. H12 - Signal freshness / late-entry decay (Aug 23) - ADOPTED
+
+**Question (user Phase-1 item #4):** users act the morning after a
+signal at best. How fast does the edge decay, and when does a signal
+expire?
+
+Method (`test_signal_freshness.py`): RS>=90 book, anchor engine, but
+entry at open of trigger+k (k=1..5), stop/target recomputed from the
+actual entry bar. Two regimes: unconditional vs "skip if original 2R
+target already tagged before entry".
+
+| k sessions late | n | win% | avg% | R-retention | PF |
+|---|---|---|---|---|---|
+| 1 (=baseline) | 3828 | 52.1 | +2.11 | 100% | 1.48 |
+| 2 | 3828 | 50.6 | +1.83 | **81%** | 1.37 |
+| 3 | 3828 | 50.1 | +1.62 | 71% | 1.32 |
+| 5 | 3828 | 49.1 | +1.23 | 56% | 1.23 |
+
+Clean monotone decay. The conditional regime barely differs (only
+3/12/51 of 3828 signals fill within 1-4 days): plain decay is the
+enemy, not chasing filled signals.
+
+**ADOPTED RULE: a signal expires after ONE session** - actionable at
+trigger+1 and trigger+2 opens only (>=81% edge retained); beyond that
+the trade is not taken.
+
+Scanner integration (`find_setups.py`):
+- looks back up to 2 bars for the freshest PULLBACK/BB_REV signal;
+  rows carry `age` (0 = fired on latest bar, 1 = one session late).
+- auto-drops setups whose target was already tagged or stop already
+  broken since the trigger bar.
+- `signal_log.csv` schema extended with `age` (auto-migrated once).
+- Web page: Signal date + colour-coded Age column; footer states the
+  expiry rule. TIER2 rows report age 0 by construction.

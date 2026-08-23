@@ -77,10 +77,11 @@ def regime_ok() -> tuple[bool, float]:
 
 
 def mk_row(kind, sym, sig_date, entry, stop, qty, rs_now, rsi_now,
-           tgt_mid="", gate="", action="", max_chase=""):
+           tgt_mid="", gate="", action="", max_chase="", age=0):
     risk_ps = entry - stop
     return {
         "setup": kind, "ticker": sym, "signal_date": sig_date,
+        "age": age,
         "entry_zone": round(entry, 1), "stop": round(stop, 1),
         "target_2R": round(entry + 2 * risk_ps, 1), "target_mid": tgt_mid,
         "risk_per_sh": round(risk_ps, 1), "qty": qty,
@@ -100,10 +101,12 @@ def chase_cap(entry: float, atr: float) -> float:
 
 def log_signals(entries: list[dict], ok: bool) -> None:
     """Idempotent append of every armed/suppressed setup + gate state."""
+    migrate_log()
     today = str(pd.Timestamp.now().date())
     now = pd.Timestamp.now().isoformat(timespec="seconds")
     recs = [{"logged_at": now, "signal_date": e["signal_date"],
              "ticker": e["ticker"], "setup": e["setup"].split("(")[0],
+             "age": e.get("age", ""),
              "action": e["action"], "entry_zone": e["entry_zone"],
              "stop": e["stop"], "target_2R": e["target_2R"], "qty": e["qty"],
              "notional": e["notional"], "rs": e["rs"],
@@ -122,7 +125,8 @@ def log_signals(entries: list[dict], ok: bool) -> None:
              not in have]
     if (today, "-", "GATE") not in have:
         fresh.append({"logged_at": now, "signal_date": today, "ticker": "-",
-                      "setup": "GATE", "action": "OPEN" if ok else "CLOSED",
+                      "setup": "GATE", "age": "",
+                      "action": "OPEN" if ok else "CLOSED",
                       "entry_zone": "", "stop": "", "target_2R": "",
                       "qty": "", "notional": "", "rs": "",
                       "gate": "OPEN" if ok else "CLOSED"})
@@ -132,6 +136,19 @@ def log_signals(entries: list[dict], ok: bool) -> None:
     pd.DataFrame(fresh, columns=LOG_COLS).to_csv(
         LOG_FP, mode="a", header=not os.path.exists(LOG_FP), index=False)
     print(f"(signal_log.csv: appended {len(fresh)} row(s))")
+
+
+def migrate_log() -> None:
+    """One-time: add 'age' column to an existing signal_log.csv."""
+    if not os.path.exists(LOG_FP):
+        return
+    try:
+        head = pd.read_csv(LOG_FP, nrows=0)
+        if "age" not in head.columns:
+            old = pd.read_csv(LOG_FP, dtype=str)
+            old.reindex(columns=LOG_COLS).to_csv(LOG_FP, index=False)
+    except Exception:
+        pass
 
 
 def main() -> None:
@@ -158,52 +175,73 @@ def main() -> None:
     rs_suppressed = 0
     suppressed = []
     gate_txt = "OPEN" if ok else "CLOSED"
+    # H12 signal freshness (doc s25): edge decays 100% -> 81% -> 71% -> 56%
+    # entering 1/2/3/5 sessions after trigger. Signals expire after ONE
+    # session (i.e. actionable at trigger+1 and trigger+2 only); older
+    # signals, target-filled or stop-broken setups are dropped.
+    MAX_AGE = 1
     for sym, d0 in sorted(raw.items()):
         df = indicators(d0)
         c, h, l = df["Close"], df["High"], df["Low"]
-        i = len(df) - 1
-        r = df.iloc[i]
-        if not np.isfinite(r.get("SMA200", np.nan)) or r["ATR"] <= 0:
-            continue
+        n = len(df)
 
         uptrend = (c > df["SMA200"]) & (df["SMA200"] > df["SMA200_20"]) & (c > df["SMA50"])
         dipped = (l <= df["SMA20"]).rolling(5).max().astype(bool)
-        pullback = bool(uptrend.iloc[i] and dipped.iloc[i]
-                        and c.iloc[i] > h.iloc[i - 1] and c.iloc[i] > r["SMA20"])
+        pb_series = uptrend & dipped & (c > h.shift(1)) & (c > df["SMA20"])
+        bb_series = (df["RSI"] < 35) & (c > df["SMA200"]) & (c <= df["BB_LO"] * 1.02)
 
-        bb_sig = bool(r["RSI"] < 35 and c.iloc[i] > r["SMA200"]
-                      and c.iloc[i] <= r["BB_LO"] * 1.02)
-
-        if not (pullback or bb_sig):
+        sig_i, kind, age = None, None, None
+        for a in range(MAX_AGE + 1):
+            i = n - 1 - a
+            if i < 260:
+                break
+            if bool(pb_series.iloc[i]):
+                sig_i, kind, age = i, "PULLBACK", a
+                break
+            if bool(bb_series.iloc[i]):
+                sig_i, kind, age = i, "BB_REV", a
+                break
+        if sig_i is None:
             continue
-        entry_ref = float(c.iloc[i])
+        r = df.iloc[sig_i]
+        if not np.isfinite(r.get("SMA200", np.nan)) or r["ATR"] <= 0:
+            continue
+
+        entry_ref = float(c.iloc[sig_i])
         rs_now = float(rs_panel.get(sym, np.nan))
-        if pullback:
-            stop = float(min(l.iloc[i - 4:i + 1].min(), entry_ref - 2 * r["ATR"])
-                         - 0.25 * r["ATR"])
-            kind = "PULLBACK"
+        if kind == "PULLBACK":
+            stop = float(min(l.iloc[sig_i - 4:sig_i + 1].min(),
+                             entry_ref - 2 * r["ATR"]) - 0.25 * r["ATR"])
         else:
             stop = float(entry_ref - 1.5 * r["ATR"])
-            kind = "BB_REV"
         risk_ps = entry_ref - stop
         if risk_ps <= 0:
             continue
+
+        # invalidation since trigger: target already tagged or stop broken
+        tgt_chk = (entry_ref + 2 * risk_ps if kind == "PULLBACK"
+                   else float(r["SMA20"]))
+        post_h, post_l = h.iloc[sig_i + 1:], l.iloc[sig_i + 1:]
+        if len(post_h) and ((post_h >= tgt_chk).any() or (post_l <= stop).any()):
+            continue
+
         qty_risk = int(RISK_PCT * CAPITAL // risk_ps)
         qty_cap = int(MAX_NOTIONAL // entry_ref)
         qty = min(qty_risk, qty_cap)
-        if pullback and not (np.isfinite(rs_now) and rs_now >= 90):
+        if kind == "PULLBACK" and not (np.isfinite(rs_now) and rs_now >= 90):
             rs_suppressed += 1
-            suppressed.append(mk_row(kind, sym, df.index[i].date(), entry_ref,
-                                     stop, qty, rs_now, r["RSI"],
+            suppressed.append(mk_row(kind, sym, df.index[sig_i].date(),
+                                     entry_ref, stop, qty, rs_now, r["RSI"],
                                      gate=gate_txt, action="SUPPRESSED_RS",
-                                     max_chase=chase_cap(entry_ref, r["ATR"])))
+                                     max_chase=chase_cap(entry_ref, r["ATR"]),
+                                     age=age))
             continue
-        rows.append(mk_row(kind, sym, df.index[i].date(), entry_ref, stop,
+        rows.append(mk_row(kind, sym, df.index[sig_i].date(), entry_ref, stop,
                            qty, rs_now, r["RSI"],
                            tgt_mid=round(float(r["SMA20"]), 1)
                            if kind == "BB_REV" else "",
                            gate=gate_txt, action="ARMED" if ok else "WATCH",
-                           max_chase=chase_cap(entry_ref, r["ATR"])))
+                           max_chase=chase_cap(entry_ref, r["ATR"]), age=age))
 
     # ---- Scan E: Tier-II sympathy (validated separately, see
     # test_tier2_sympathy.py / doc section 13) ----
@@ -239,7 +277,8 @@ def main() -> None:
                                and np.isfinite(rs_panel[sym]) else np.nan,
                                r["RSI"], gate=gate_txt,
                                action="ARMED" if ok else "WATCH",
-                               max_chase=chase_cap(entry_ref, r["ATR"])))
+                               max_chase=chase_cap(entry_ref, r["ATR"]),
+                               age=0))
     except Exception as e:  # sympathy scan must never kill the main scan
         print(f"(tier2 scan skipped: {e})")
 
@@ -261,6 +300,9 @@ def main() -> None:
           "SKIP the trade if next open < stop or > max_chase (H9 gap policy); "
           "stop-loss mandatory at fill; exits per validated rules "
           "(pullback/tier2: 2R, time stop 20d/10d; bb_rev: SMA20 or 8d).")
+    print("Freshness (H12, doc s25): age 0 = fired on latest bar (full edge), "
+          "age 1 = one session late (81% edge) - signals older than that "
+          "(or target-filled / stop-broken since trigger) are auto-expired.")
 
 
 if __name__ == "__main__":
